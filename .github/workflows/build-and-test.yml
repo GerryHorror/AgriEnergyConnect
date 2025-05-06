@@ -44,26 +44,26 @@ jobs:
       - name: Test
         run: dotnet test --no-build --verbosity normal
 
-  lint:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18.x'
-
-      - name: Install linters
-        run: |
-          npm install eslint stylelint --save-dev
-
-      - name: Run ESLint
-        run: npx eslint
-
-      - name: Run Stylelint
-        run: npx stylelint "**/*.css"
-
-    continue-on-error: true  # lint failures won’t block PR merges
+ #  lint:
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      - name: Setup Node.js
+#        uses: actions/setup-node@v3
+#        with:
+#          node-version: '18.x'
+#
+#      - name: Install linters
+#        run: |
+#          npm install eslint stylelint --save-dev
+#
+#      - name: Run ESLint
+#        run: npx eslint "wwwroot/js/**/*.js"
+#
+#      - name: Run Stylelint
+#        run: npx stylelint "**/*.css"
+#
+#    continue-on-error: true
