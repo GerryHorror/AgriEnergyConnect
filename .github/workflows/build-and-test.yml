@@ -61,7 +61,7 @@ jobs:
           npm install eslint stylelint --save-dev
 
       - name: Run ESLint
-        run: npx eslint "**/*.js"
+        run: npx eslint
 
       - name: Run Stylelint
         run: npx stylelint "**/*.css"
