@@ -1,6 +1,6 @@
 module.exports = [
   {
-    files: ['**/*.js'],
+    files: ['wwwroot/js/**/*.js'],
     languageOptions: {
       ecmaVersion: 2021,
       sourceType: 'script',
