@@ -11,25 +11,25 @@ namespace AgriEnergyConnect.Services.Interfaces
         // Parameters:
         //   userId - The ID of the user whose inbox messages you want to retrieve.
         // Returns a collection of Message objects representing the user's inbox.
-        Task<IEnumerable<Message>> GetInboxMessagesASync(int userId);
+        Task<IEnumerable<Message>> GetInboxMessagesAsync(int userId);
 
         // Retrieves summarised information for all messages received by a specific user (inbox).
         // Parameters:
         //   userId - The ID of the user whose inbox message summaries you want to retrieve.
         // Returns a collection of MessageSummaryDTO objects for the user's inbox.
-        Task<IEnumerable<MessageSummaryDTO>> GetInboxMessagesSummariesASync(int userId);
+        Task<IEnumerable<MessageSummaryDTO>> GetInboxMessagesSummariesAsync(int userId);
 
         // Retrieves all messages sent by a specific user.
         // Parameters:
         //   userId - The ID of the user whose sent messages you want to retrieve.
         // Returns a collection of Message objects representing the user's sent messages.
-        Task<IEnumerable<Message>> GetSentMessagesASync(int userId);
+        Task<IEnumerable<Message>> GetSentMessagesAsync(int userId);
 
         // Retrieves summarised information for all messages sent by a specific user.
         // Parameters:
         //   userId - The ID of the user whose sent message summaries you want to retrieve.
         // Returns a collection of MessageSummaryDTO objects for the user's sent messages.
-        Task<IEnumerable<MessageSummaryDTO>> GetSentMessagesSummariesASync(int userId);
+        Task<IEnumerable<MessageSummaryDTO>> GetSentMessagesSummariesAsync(int userId);
 
         // Retrieves a specific message by its unique ID (MessageId).
         // Parameters:

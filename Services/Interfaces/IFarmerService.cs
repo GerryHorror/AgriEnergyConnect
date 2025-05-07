@@ -13,7 +13,7 @@ namespace AgriEnergyConnect.Services.Interfaces
 
         // Retrieves summarised information for all farmers.
         // Returns a collection of FarmerSummaryDTO objects, typically used for listing or preview purposes.
-        Task<IEnumerable<FarmerSummaryDTO>> GetAllFarmerSummaries();
+        Task<IEnumerable<FarmerSummaryDTO>> GetAllFarmerSummariesAsync();
 
         // Retrieves a specific farmer by their unique ID (FarmerId).
         // Parameters:
