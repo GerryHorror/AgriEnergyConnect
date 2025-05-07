@@ -65,6 +65,9 @@
         // The full name of the farmer (e.g., "John Smith").
         public string OwnerName { get; set; }
 
+        // The total number of products associated with the farmer.
+        public int ProductCount { get; set; }
+
         // Indicates whether the farmer is currently active in the system.
         public bool IsActive { get; set; }
     }
