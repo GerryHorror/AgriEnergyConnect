@@ -1,0 +1,326 @@
+﻿/* Auth Pages Styling */
+/* This file contains styles specific to authentication-related pages,
+   including login and registration. */
+
+/* Background styling */
+/* Styles the body of authentication pages with a gradient background and decorative elements. */
+.auth-body {
+    background: linear-gradient(to bottom right, #f5f7f9, #e8f4e5);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Arial, sans-serif;
+    position: relative;
+    overflow: hidden;
+}
+
+    /* Adds a radial grid pattern to the background for visual enhancement. */
+    .auth-body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: radial-gradient(circle at 3px 3px, rgba(76, 175, 80, 0.1) 2px, transparent 0);
+        background-size: 20px 20px;
+        opacity: 0.8;
+        z-index: -1;
+    }
+
+    /* Adds a decorative circular element to the background. */
+    .auth-body::after {
+        content: "";
+        position: absolute;
+        top: 100px;
+        left: 100px;
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background-color: rgba(76, 175, 80, 0.05);
+        z-index: -1;
+    }
+
+/* Login container */
+/* Centers and sizes the main container for login content. */
+.login-container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Header styling */
+/* Styles the header section of the login page, including the title and subtitle. */
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.app-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    margin: 10px 0 5px;
+}
+
+.app-subtitle {
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+/* Login card */
+/* Styles the card containing the login form. */
+.login-card {
+    background-color: white;
+    border-radius: 12px;
+    padding: 30px;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+    /* Styles the heading inside the login card. */
+    .login-card h2 {
+        font-size: 24px;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+.card-subtitle {
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 25px;
+}
+
+/* Role tabs */
+/* Styles the tabs for selecting user roles (e.g., Farmer, Employee). */
+.role-tabs {
+    display: flex;
+    background-color: #f5f5f5;
+    border-radius: 20px;
+    margin-bottom: 25px;
+    overflow: hidden;
+}
+
+.role-tab {
+    flex: 1;
+    padding: 12px 15px;
+    text-align: center;
+    color: #666;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+    /* Styles the active role tab. */
+    .role-tab.active {
+        background-color: #4CAF50;
+        color: white;
+        font-weight: bold;
+    }
+
+    /* Adds rounded corners to the first and last active tabs. */
+    .role-tab:first-child.active {
+        border-radius: 20px 0 0 20px;
+    }
+
+    .role-tab:last-child.active {
+        border-radius: 0 20px 20px 0;
+    }
+
+/* Form styling */
+/* Styles the login form and its elements. */
+.login-form {
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+    /* Styles the labels for form inputs. */
+    .form-group label {
+        display: block;
+        font-size: 14px;
+        color: #555;
+        margin-bottom: 8px;
+    }
+
+.input-with-icon {
+    position: relative;
+}
+
+    /* Positions the icon inside the input field. */
+    .input-with-icon i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #aaa;
+    }
+
+    /* Styles the input fields with padding and border. */
+    .input-with-icon input {
+        width: 100%;
+        padding: 12px 15px 12px 40px;
+        border: 1.5px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+    }
+
+        /* Changes the border color on focus. */
+        .input-with-icon input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+/* Form options */
+/* Styles the "Remember Me" checkbox and "Forgot Password" link. */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+}
+
+    .remember-me input {
+        margin-right: 8px;
+    }
+
+.forgot-password {
+    color: #4CAF50;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+    .forgot-password:hover {
+        text-decoration: underline;
+    }
+
+/* Login button */
+/* Styles the login button with hover effects. */
+.btn-login {
+    width: 100%;
+    padding: 12px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+    .btn-login:hover {
+        background-color: #388E3C;
+    }
+
+/* Footer text */
+/* Styles the footer text and links. */
+.login-footer {
+    margin-top: 25px;
+    font-size: 12px;
+    color: #888;
+}
+
+    .login-footer a {
+        color: #4CAF50;
+        text-decoration: none;
+    }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+.copyright {
+    font-size: 11px;
+    color: #aaa;
+    margin-top: 5px;
+}
+
+/* Validation styles */
+/* Styles for validation error messages. */
+.validation-summary {
+    color: #d32f2f;
+    background-color: #ffebee;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.text-danger {
+    color: #d32f2f;
+    font-size: 12px;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Responsive adjustments */
+/* Adjusts styles for smaller screens. */
+@media (max-width: 576px) {
+    .login-card {
+        padding: 20px;
+    }
+
+    .role-tabs {
+        margin-bottom: 20px;
+    }
+
+    .app-title {
+        font-size: 24px;
+    }
+
+    .app-subtitle {
+        font-size: 14px;
+    }
+}
+
+/* Employee role specific colors */
+/* Overrides styles for the Employee role. */
+body.employee-role .role-tab.active {
+    background-color: #00897B;
+}
+
+body.employee-role .input-with-icon input:focus {
+    border-color: #00897B;
+}
+
+body.employee-role .forgot-password,
+body.employee-role .login-footer a {
+    color: #00897B;
+}
+
+body.employee-role .btn-login {
+    background-color: #00897B;
+}
+
+    body.employee-role .btn-login:hover {
+        background-color: #00796B;
+    }
+
+body.employee-role.auth-body {
+    background: linear-gradient(to bottom right, #f5f7f9, #e0f2f1);
+}
+
+    body.employee-role.auth-body::before {
+        background-image: radial-gradient(circle at 3px 3px, rgba(0, 137, 123, 0.1) 2px, transparent 0);
+    }
+
+    body.employee-role.auth-body::after {
+        background-color: rgba(0, 137, 123, 0.05);
+    }
