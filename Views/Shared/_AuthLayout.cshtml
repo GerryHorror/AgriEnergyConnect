@@ -1,0 +1,28 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Agri-Energy Connect</title>
+
+    <!-- Links to external stylesheets for Bootstrap, Font Awesome, and custom site styles. -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/auth.css" />
+</head>
+<body class="auth-body">
+    <!-- Main container for authentication-related content. -->
+    <div class="auth-container">
+        <!-- Renders the body content of the page. -->
+        @RenderBody()
+    </div>
+
+    <!-- Includes external JavaScript libraries and custom scripts. -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+    <!-- Renders additional scripts defined in the "Scripts" section of the page, if any. -->
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

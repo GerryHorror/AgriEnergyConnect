@@ -1,5 +1,120 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model AgriEnergyConnect.Models.ViewModels.LoginViewModel
 @{
+    // Sets the title of the page and specifies the layout to use for authentication-related views.
+    ViewData["Title"] = "Login";
+    Layout = "_AuthLayout";
+}
+
+<div class="login-container">
+    <div class="login-header">
+        <div class="app-logo">
+            <!-- Displays the application logo using an SVG graphic. -->
+            <svg width="80" height="60" viewBox="0 0 80 60">
+                <path d="M10,20 Q25,10 40,20 T70,20" stroke="#4CAF50" stroke-width="3" fill="none" />
+                <path d="M0,30 Q20,15 40,30 T80,30" stroke="#4CAF50" stroke-width="3" fill="none" />
+                <path d="M10,40 Q25,30 40,40 T70,40" stroke="#4CAF50" stroke-width="3" fill="none" />
+            </svg>
+        </div>
+        <!-- Displays the application title and subtitle. -->
+        <h1 class="app-title">Agri-Energy Connect</h1>
+        <p class="app-subtitle">Sustainable Farming • Green Energy • Innovation</p>
+    </div>
+
+    <div class="login-card">
+        <!-- Displays a welcome message and a subtitle for the login form. -->
+        <h2>Welcome Back</h2>
+        <p class="card-subtitle">Sign in to your account</p>
+
+        <!-- Role Selection Tabs -->
+        <!-- Allows the user to select their role (Farmer or Employee) for login. -->
+        <div class="role-tabs">
+            <a href="#" class="role-tab @(ViewBag.SelectedRole == "Farmer" ? "active" : "")" id="farmer-tab">Farmer</a>
+            <a href="#" class="role-tab @(ViewBag.SelectedRole == "Employee" ? "active" : "")" id="employee-tab">Employee</a>
+        </div>
+
+        <!-- Login Form -->
+        <!-- Handles user login by submitting credentials to the AccountController. -->
+        <form asp-action="Login" asp-controller="Account" method="post" class="login-form">
+            <!-- Displays validation errors for the form. -->
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+            <!-- Hidden field to store the return URL for redirection after login. -->
+            <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+
+            <!-- Username Input -->
+            <!-- Allows the user to enter their username. -->
+            <div class="form-group">
+                <label asp-for="Username">Username</label>
+                <div class="input-with-icon">
+                    <i class="fa fa-user"></i>
+                    <input asp-for="Username" class="form-control" placeholder="Enter your username" />
+                </div>
+                <span asp-validation-for="Username" class="text-danger"></span>
+            </div>
+
+            <!-- Password Input -->
+            <!-- Allows the user to enter their password. -->
+            <div class="form-group">
+                <label asp-for="Password">Password</label>
+                <div class="input-with-icon">
+                    <i class="fa fa-lock"></i>
+                    <input asp-for="Password" class="form-control" placeholder="Enter your password" type="password" />
+                </div>
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <!-- Form Options -->
+            <!-- Provides options for "Remember Me" and password recovery. -->
+            <div class="form-options">
+                <div class="remember-me">
+                    <input asp-for="RememberMe" type="checkbox" id="remember-me" />
+                    <label for="remember-me">Remember me</label>
+                </div>
+                <a href="#" class="forgot-password">Forgot Password?</a>
+            </div>
+
+            <!-- Submit Button -->
+            <!-- Submits the login form. -->
+            <button type="submit" class="btn-login">Sign In</button>
+        </form>
+
+        <!-- Footer -->
+        <!-- Displays support contact information and copyright notice. -->
+        <p class="login-footer">Need assistance? Contact <a href="mailto:support@agrienergyconnect.com">support@agrienergyconnect.com</a></p>
+        <p class="copyright">Agri-Energy Connect © @DateTime.Now.Year</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initializes the page based on the currently active role tab.
+            if ($('#employee-tab').hasClass('active')) {
+                $('body').addClass('employee-role');
+            } else {
+                $('body').removeClass('employee-role');
+            }
+
+            // Handles the Farmer tab click event.
+            $('#farmer-tab').click(function(e) {
+                e.preventDefault();
+                $(this).addClass('active');
+                $('#employee-tab').removeClass('active');
+                $('body').removeClass('employee-role'); // Removes the employee color scheme.
+            });
+
+            // Handles the Employee tab click event.
+            $('#employee-tab').click(function(e) {
+                e.preventDefault();
+                $(this).addClass('active');
+                $('#farmer-tab').removeClass('active');
+                $('body').addClass('employee-role'); // Adds the employee color scheme.
+            });
+        });
+    </script>
+
+    @{
+        // Renders validation scripts for client-side validation.
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
