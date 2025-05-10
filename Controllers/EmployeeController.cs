@@ -137,7 +137,7 @@ namespace AgriEnergyConnect.Controllers
                         FarmerId = f.FarmerId,
                         FarmName = f.FarmName,
                         Location = f.Location,
-                        OwnerName = f.User != null ? $"{f.User.FirstName} {f.User.LastName}" : "Unknown",
+                        OwnerName = f.User != null ? $"{f.User.FirstName ?? "Unknown"} {f.User.LastName ?? "Farmer"}".Trim() : "Unknown Farmer",
                         ProductCount = f.Products?.Count ?? 0
                     }).ToList(),
                     RecentActivities = activities
@@ -183,6 +183,11 @@ namespace AgriEnergyConnect.Controllers
         [HttpGet]
         public IActionResult AddFarmer()
         {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var user = _authService.GetUserByIdAsync(userId).Result;
+
+            ViewBag.Employee = new { User = user };
+
             return View(new FarmerViewModel());
         }
 
