@@ -26,58 +26,102 @@
             <h5 class="employee-addfarmer-section-title">Personal Information</h5>
             <hr class="employee-addfarmer-divider" />
             <div class="row">
+                <!-- First Name -->
                 <div class="col-md-6 mb-3">
                     <label asp-for="FirstName" class="form-label employee-addfarmer-form-label"></label>
-                    <input asp-for="FirstName" class="form-control employee-addfarmer-input" />
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">
+                            <i class="fa-solid fa-user icon-muted icon-md"></i>
+                        </span>
+                        <input asp-for="FirstName" class="form-control employee-addfarmer-input" />
+                    </div>
                     <span asp-validation-for="FirstName" class="employee-addfarmer-validation"></span>
                 </div>
+
+                <!-- Last Name -->
                 <div class="col-md-6 mb-3">
                     <label asp-for="LastName" class="form-label employee-addfarmer-form-label"></label>
-                    <input asp-for="LastName" class="form-control employee-addfarmer-input" />
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">
+                            <i class="fa-solid fa-user icon-muted icon-md"></i>
+                        </span>
+                        <input asp-for="LastName" class="form-control employee-addfarmer-input" />
+                    </div>
                     <span asp-validation-for="LastName" class="employee-addfarmer-validation"></span>
                 </div>
+
+                <!-- Email -->
                 <div class="col-md-6 mb-3">
                     <label asp-for="Email" class="form-label employee-addfarmer-form-label"></label>
-                    <input asp-for="Email" class="form-control employee-addfarmer-input" />
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">
+                            <i class="fa-solid fa-envelope icon-blue icon-md"></i>
+                        </span>
+                        <input asp-for="Email" class="form-control employee-addfarmer-input" />
+                    </div>
                     <span asp-validation-for="Email" class="employee-addfarmer-validation"></span>
                 </div>
+
+                <!-- Phone Number -->
                 <div class="col-md-6 mb-3">
                     <label asp-for="PhoneNumber" class="form-label employee-addfarmer-form-label"></label>
-                    <input asp-for="PhoneNumber" class="form-control employee-addfarmer-input" />
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">
+                            <i class="fa-solid fa-phone-alt icon-green icon-md"></i>
+                        </span>
+                        <input asp-for="PhoneNumber" class="form-control employee-addfarmer-input" />
+                    </div>
                     <span asp-validation-for="PhoneNumber" class="employee-addfarmer-validation"></span>
                 </div>
-            </div>
 
-            <!-- Farm Details -->
-            <h5 class="employee-addfarmer-section-title">Farm Details</h5>
-            <hr class="employee-addfarmer-divider" />
-            <div class="row">
+                <!-- Farm Name -->
                 <div class="col-md-6 mb-3">
                     <label asp-for="FarmName" class="form-label employee-addfarmer-form-label"></label>
-                    <input asp-for="FarmName" class="form-control employee-addfarmer-input" />
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">
+                            <i class="fa-solid fa-tractor icon-orange icon-md"></i>
+                        </span>
+                        <input asp-for="FarmName" class="form-control employee-addfarmer-input" />
+                    </div>
                     <span asp-validation-for="FarmName" class="employee-addfarmer-validation"></span>
                 </div>
+
+                <!-- Location -->
                 <div class="col-md-6 mb-3">
                     <label asp-for="Location" class="form-label employee-addfarmer-form-label"></label>
-                    <input asp-for="Location" class="form-control employee-addfarmer-input" />
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">
+                            <i class="fa-solid fa-map-marker-alt icon-green icon-md"></i>
+                        </span>
+                        <input asp-for="Location" class="form-control employee-addfarmer-input" />
+                    </div>
                     <span asp-validation-for="Location" class="employee-addfarmer-validation"></span>
                 </div>
-            </div>
 
-            <!-- Account Setup -->
-            <h5 class="employee-addfarmer-section-title">Account Setup</h5>
-            <hr class="employee-addfarmer-divider" />
-            <div class="row">
+                <!-- Username -->
                 <div class="col-md-6 mb-3">
                     <label asp-for="Username" class="form-label employee-addfarmer-form-label"></label>
-                    <input asp-for="Username" class="form-control employee-addfarmer-input" />
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">
+                            <i class="fa-solid fa-user-circle icon-muted icon-md"></i>
+                        </span>
+                        <input asp-for="Username" class="form-control employee-addfarmer-input" />
+                    </div>
                     <span asp-validation-for="Username" class="employee-addfarmer-validation"></span>
                 </div>
+
+                <!-- Password -->
                 <div class="col-md-6 mb-3">
                     <label asp-for="Password" class="form-label employee-addfarmer-form-label"></label>
-                    <input asp-for="Password" class="form-control employee-addfarmer-input" />
+                    <div class="input-group">
+                        <span class="input-group-text bg-light">
+                            <i class="fa-solid fa-lock icon-muted icon-md"></i>
+                        </span>
+                        <input asp-for="Password" class="form-control employee-addfarmer-input" />
+                    </div>
                     <span asp-validation-for="Password" class="employee-addfarmer-validation"></span>
                 </div>
+
             </div>
 
             <p class="employee-addfarmer-note">* Required fields</p>
