@@ -36,27 +36,143 @@ namespace AgriEnergyConnect.Controllers
             try
             {
                 var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-                var farmerDTO = await _farmerService.GetFarmerDTOByUserIdAsync(userId);
 
+                // Get farmer data using existing DTO method
+                var farmerDTO = await _farmerService.GetFarmerDTOByUserIdAsync(userId);
                 if (farmerDTO == null)
                     return NotFound();
 
-                ViewBag.Farmer = await _farmerService.GetFarmerByUserIdAsync(userId);
+                // Get all product DTOs for the farmer using existing method
+                var productDTOs = await _productService.GetProductDTOsByFarmerIdAsync(farmerDTO.FarmerId);
+                var productList = productDTOs.ToList();
 
-                // Get latest products for dashboard
-                var products = await _productService.GetProductsByFarmerIdAsync(farmerDTO.FarmerId);
+                // Calculate statistics
+                var totalProducts = productList.Count;
+                var categoryCount = productList.Select(p => p.Category).Distinct().Count();
+                var categoryList = productList.Select(p => p.Category).Distinct().ToList();
 
-                // Calculate statistics for dashboard
-                ViewBag.TotalProducts = products.Count();
-                ViewBag.Categories = products.Select(p => p.Category).Distinct().Count();
+                // Get the last added product time
+                var lastProduct = productList.OrderByDescending(p => p.CreatedDate).FirstOrDefault();
+                string lastAddedTime;
+                if (lastProduct != null)
+                {
+                    var timeSpan = DateTime.Now - lastProduct.CreatedDate;
+                    lastAddedTime = FormatTimeAgo(timeSpan);
+                }
+                else
+                {
+                    lastAddedTime = "No products yet";
+                }
 
-                return View(products.OrderByDescending(p => p.CreatedDate).Take(5).ToList());
+                // Create farmer object from DTO for view compatibility
+                var farmer = new Farmer
+                {
+                    FarmerId = farmerDTO.FarmerId,
+                    FarmName = farmerDTO.FarmName,
+                    Location = farmerDTO.Location,
+                    User = new User
+                    {
+                        FirstName = farmerDTO.FirstName,
+                        LastName = farmerDTO.LastName,
+                        CreatedDate = farmerDTO.JoinedDate,
+                        Role = UserRole.Farmer
+                    }
+                };
+
+                // Create recent products list
+                var recentProducts = ConvertProductDTOsToProducts(productList.OrderByDescending(p => p.CreatedDate).Take(5).ToList());
+
+                // Create recent activities
+                var recentActivities = GetRecentActivitiesFromDTOs(productList);
+
+                // Set ViewBag properties for the view (cast to dynamic to avoid casting issues)
+                ViewBag.Farmer = farmer;
+                ViewBag.TotalProducts = totalProducts;
+                ViewBag.Categories = categoryCount;
+                ViewBag.CategoryList = categoryList;
+                ViewBag.LastAdded = lastAddedTime;
+                ViewBag.RecentProducts = recentProducts;
+                ViewBag.RecentActivities = recentActivities;
+                ViewBag.LastProductAdded = lastProduct?.CreatedDate ?? DateTime.Now;
+                ViewBag.LastAddedTimeAgo = lastAddedTime;
+
+                // Return the view with recent products as the model (for backward compatibility)
+                return View(recentProducts);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Error loading dashboard: {ex.Message}";
                 return View(Array.Empty<Product>());
             }
+        }
+
+        // Helper method to convert ProductDTOs to Product entities for view compatibility
+        private List<Product> ConvertProductDTOsToProducts(List<ProductDTO> productDTOs)
+        {
+            return productDTOs.Select(dto => new Product
+            {
+                ProductId = dto.ProductId,
+                Name = dto.Name,
+                Category = dto.Category,
+                Description = dto.Description,
+                ProductionDate = dto.ProductionDate,
+                FarmerId = dto.FarmerId,
+                CreatedDate = dto.CreatedDate
+            }).ToList();
+        }
+
+        // Helper method to format time ago
+        private string FormatTimeAgo(TimeSpan timeSpan)
+        {
+            if (timeSpan.TotalDays >= 365)
+            {
+                int years = (int)(timeSpan.TotalDays / 365);
+                return $"{years} year{(years > 1 ? "s" : "")} ago";
+            }
+            if (timeSpan.TotalDays >= 30)
+            {
+                int months = (int)(timeSpan.TotalDays / 30);
+                return $"{months} month{(months > 1 ? "s" : "")} ago";
+            }
+            if (timeSpan.TotalDays >= 1)
+            {
+                int days = (int)timeSpan.TotalDays;
+                return $"{days} day{(days > 1 ? "s" : "")} ago";
+            }
+            if (timeSpan.TotalHours >= 1)
+            {
+                int hours = (int)timeSpan.TotalHours;
+                return $"{hours} hour{(hours > 1 ? "s" : "")} ago";
+            }
+            if (timeSpan.TotalMinutes >= 1)
+            {
+                int minutes = (int)timeSpan.TotalMinutes;
+                return $"{minutes} minute{(minutes > 1 ? "s" : "")} ago";
+            }
+            return "just now";
+        }
+
+        // Helper method to generate recent activities from actual ProductDTOs
+        private List<ActivityItem> GetRecentActivitiesFromDTOs(List<ProductDTO> productDTOs)
+        {
+            var activities = new List<ActivityItem>();
+
+            // Get all products ordered by creation date to show actual activity
+            var sortedProducts = productDTOs.OrderByDescending(p => p.CreatedDate).ToList();
+
+            // Add activity items for each product creation
+            foreach (var product in sortedProducts)
+            {
+                activities.Add(new ActivityItem
+                {
+                    Description = $"Added \"{product.Name}\"",
+                    Time = FormatTimeAgo(DateTime.Now - product.CreatedDate),
+                    Color = "#4CAF50",
+                    Icon = "fa-plus"
+                });
+            }
+
+            return activities;
         }
 
         // Displays all products associated with the logged-in farmer.

@@ -35,11 +35,18 @@
         <!-- Login Form -->
         <!-- Handles user login by submitting credentials to the AccountController. -->
         <form asp-action="Login" asp-controller="Account" method="post" class="login-form">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    @Html.ValidationSummary()
+                </div>
+            }
+
             <!-- Displays validation errors for the form. -->
             <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
 
             <!-- Hidden field to store the return URL for redirection after login. -->
-            <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+            <input type="hidden" asp-for="ReturnUrl" value="@(Model.ReturnUrl ?? "/")" />
 
             <!-- Username Input -->
             <!-- Allows the user to enter their username. -->
