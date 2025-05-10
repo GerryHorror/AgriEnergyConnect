@@ -1,5 +1,184 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<AgriEnergyConnect.Models.Product>
 @{
+    ViewData["Title"] = "Farmer Dashboard";
+    Layout = "_FarmerLayout";
+}
+
+<!-- User Profile Section -->
+<div class="profile-section">
+    <div class="profile-info">
+        <div class="avatar">
+            @(ViewBag.Farmer.User.FirstName[0].ToString() + ViewBag.Farmer.User.LastName[0].ToString())
+        </div>
+        <div class="profile-details">
+            <h1>Welcome, @ViewBag.Farmer.User.FirstName @ViewBag.Farmer.User.LastName</h1>
+            <p>@ViewBag.Farmer.FarmName | @ViewBag.Farmer.Location | Member since: @ViewBag.Farmer.User.CreatedDate.ToString("MMMM yyyy")</p>
+        </div>
+    </div>
+    <div class="quick-actions">
+        <a asp-action="AddProduct" class="btn btn-primary">
+            <i class="fa fa-plus"></i> Add Product
+        </a>
+    </div>
+</div>
+
+<!-- Dashboard Stats -->
+<div class="dashboard-stats">
+    <div class="stat-card total-products">
+        <div class="stat-header">
+            <h3>TOTAL PRODUCTS</h3>
+        </div>
+        <div class="stat-content">
+            <div class="stat-number">@ViewBag.TotalProducts</div>
+            @if (ViewBag.TotalProducts > 0)
+            {
+                <div class="stat-chart">
+                    <svg width="60" height="30">
+                        <polyline points="0,30 20,10 40,20 60,0" stroke="#4CAF50" stroke-width="2" fill="none" />
+                    </svg>
+                </div>
+            }
+        </div>
+        <div class="stat-footer">
+            Last added: @ViewBag.LastAdded
+        </div>
+    </div>
+
+    <div class="stat-card categories">
+        <div class="stat-header">
+            <h3>PRODUCT CATEGORIES</h3>
+        </div>
+        <div class="stat-content">
+            <div class="stat-number">@ViewBag.Categories</div>
+        </div>
+        <div class="stat-footer">
+            <div class="category-pills">
+                @if (ViewBag.CategoryList != null)
+                {
+                    @foreach (var category in ViewBag.CategoryList)
+                    {
+                        <span class="category-pill" style="background-color: @GetCategoryColor(category)">@category</span>
+                    }
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="stat-card recent-activity">
+        <div class="stat-header">
+            <h3>RECENT ACTIVITY</h3>
+        </div>
+        <div class="stat-content">
+            @if (ViewBag.RecentActivities != null && ViewBag.RecentActivities.Count > 0)
+            {
+                <div class="activity-timeline">
+                    @foreach (var activity in ViewBag.RecentActivities)
+                    {
+                        <div class="activity-item">
+                            <div class="activity-marker" style="background-color: @activity.Color"></div>
+                            <div class="activity-details">
+                                <div class="activity-text">@activity.Description</div>
+                                <div class="activity-time">@activity.Time</div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-activity">
+                    <p>No recent activity</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Add New Product Form -->
+<div class="add-product-section">
+    <h2>Add New Product</h2>
+    <hr />
+
+    <form asp-action="AddProduct" method="post" class="product-form">
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="Name">Product Name*</label>
+                <div class="input-with-icon">
+                    <span class="input-icon">T</span>
+                    <input type="text" id="Name" name="Name" class="form-control" placeholder="Enter product name" required />
+                </div>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="Category">Category*</label>
+                <div class="input-with-icon">
+                    <span class="input-icon">≡</span>
+                    <select id="Category" name="Category" class="form-control" required>
+                        <option value="">Select category</option>
+                        <option value="Grains">Grains</option>
+                        <option value="Vegetables">Vegetables</option>
+                        <option value="Dairy">Dairy</option>
+                        <option value="Organic">Organic</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group col-md-6">
+                <label for="ProductionDate">Production Date*</label>
+                <div class="input-with-icon">
+                    <span class="input-icon">📅</span>
+                    <input type="date" id="ProductionDate" name="ProductionDate" class="form-control" placeholder="YYYY-MM-DD" required />
+                </div>
+            </div>
+            <div class="form-group col-md-6">
+                <label for="Description">Description (Optional)</label>
+                <div class="input-with-icon">
+                    <span class="input-icon">✎</span>
+                    <input type="text" id="Description" name="Description" class="form-control" placeholder="Short description" />
+                </div>
+            </div>
+        </div>
+
+        <div class="form-buttons">
+            <button type="submit" class="btn btn-primary">Add Product</button>
+            <button type="reset" class="btn btn-outline">Reset</button>
+            <span class="required-note">* Required fields</span>
+        </div>
+    </form>
+</div>
+
+@functions {
+    private string GetCategoryColor(string category)
+    {
+        switch (category.ToLower())
+        {
+            case "organic":
+                return "#E8F5E9";
+            case "dairy":
+                return "#FFF3E0";
+            case "grains":
+                return "#E1F5FE";
+            case "vegetables":
+                return "#F1F8E9";
+            default:
+                return "#F5F5F5";
+        }
+    }
+}
+
+@section Scripts {
+    <style>
+        .empty-activity {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+            width: 100%;
+        }
+
+            .empty-activity p {
+                margin: 0;
+                font-size: 14px;
+            }
+    </style>
 }

@@ -84,6 +84,7 @@ using (var scope = app.Services.CreateScope())
     {
         var dbContext = services.GetRequiredService<AppDbContext>();
         dbContext.Database.EnsureCreated();
+        await DatabaseSeeder.SeedDataAsync(dbContext);
     }
     catch (Exception ex)
     {
