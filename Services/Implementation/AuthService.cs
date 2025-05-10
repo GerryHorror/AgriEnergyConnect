@@ -90,5 +90,13 @@ namespace AgriEnergyConnect.Services.Implementation
         {
             return await _context.Users.AnyAsync(u => u.Email.ToLower() == email.ToLower());
         }
+
+        // Retrieves all users in the system.
+        // Returns a list of User objects representing all users.
+        public async Task<IEnumerable<User>> GetAllUsersAsync()
+        {
+            // Retrieve all users from the database
+            return await _context.Users.ToListAsync();
+        }
     }
 }

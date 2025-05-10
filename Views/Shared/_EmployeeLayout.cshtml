@@ -1,0 +1,89 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Agri-Energy Connect</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    <link rel="stylesheet" href="~/css/employee-dashboard.css" />
+</head>
+<body class="employee-body">
+    <!-- Sidebar -->
+    <aside class="employee-sidebar">
+        <div class="profile-section">
+            <div class="admin-avatar">
+                @(ViewBag.Employee.User.FirstName[0].ToString() + ViewBag.Employee.User.LastName[0].ToString())
+            </div>
+            <div class="admin-name">@ViewBag.Employee.User.FirstName @ViewBag.Employee.User.LastName</div>
+            <div class="admin-role">System Admin</div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <ul>
+                <li>
+                    <a asp-controller="Employee" asp-action="Dashboard" class="nav-link active">
+                        <span class="nav-icon">⬤</span>
+                        Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Employee" asp-action="ManageFarmers" class="nav-link">
+                        <span class="nav-icon">○</span>
+                        Farmers
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Employee" asp-action="AddFarmer" class="nav-link">
+                        <span class="nav-icon">＋</span>
+                        Add Farmer
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Employee" asp-action="SearchProducts" class="nav-link">
+                        <span class="nav-icon">◈</span>
+                        Products
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Employee" asp-action="Reports" class="nav-link">
+                        <span class="nav-icon">◉</span>
+                        Reports
+                    </a>
+                </li>
+                <li style="margin-top: 200px;">
+                    <a asp-controller="Account" asp-action="Logout" class="nav-link">
+                        <span class="nav-icon">⇥</span>
+                        Logout
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    </aside>
+
+    <!-- Header -->
+    <header class="employee-header">
+        <div class="header-container">
+            <div class="logo">
+                <svg width="40" height="30" viewBox="0 0 40 30">
+                    <path d="M5,10 Q12.5,0 20,10 T35,10" stroke="white" stroke-width="2" fill="none" />
+                    <path d="M0,15 Q10,0 20,15 T40,15" stroke="white" stroke-width="2" fill="none" />
+                    <path d="M5,20 Q12.5,10 20,20 T35,20" stroke="white" stroke-width="2" fill="none" />
+                </svg>
+                <span class="app-name">Agri-Energy Connect</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        @RenderBody()
+    </main>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

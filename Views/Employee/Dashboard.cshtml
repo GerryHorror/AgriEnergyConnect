@@ -1,5 +1,148 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model AgriEnergyConnect.Models.ViewModels.EmployeeDashboardViewModel
 @{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "_EmployeeLayout";
+}
+
+<!-- Main Content Area -->
+<div class="dashboard-content">
+    <!-- Page Title -->
+    <div class="page-header">
+        <div class="title-section">
+            <h1>Dashboard Overview</h1>
+            <p>Welcome back, @ViewBag.Employee.User.FirstName! Here's what's happening today</p>
+        </div>
+        <div class="date-display">
+            @DateTime.Now.ToString("MMMM d, yyyy")
+        </div>
+    </div>
+
+    <!-- Dashboard Stats Grid -->
+    <div class="dashboard-stats">
+        <div class="stat-card farmers-card">
+            <div class="stat-header">
+                <h3>TOTAL FARMERS</h3>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">@ViewBag.TotalFarmers</div>
+                <div class="stat-badge farmers">+@ViewBag.NewFarmers</div>
+            </div>
+        </div>
+
+        <div class="stat-card products-card">
+            <div class="stat-header">
+                <h3>TOTAL PRODUCTS</h3>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">@ViewBag.TotalProducts</div>
+                <div class="stat-badge products">+@ViewBag.NewProducts</div>
+            </div>
+        </div>
+
+        <div class="stat-card users-card">
+            <div class="stat-header">
+                <h3>ACTIVE USERS</h3>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">@ViewBag.ActiveUsers</div>
+                <div class="stat-badge users">@ViewBag.ActivePercentage%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="content-grid">
+        <!-- Recent Farmers Section -->
+        <div class="recent-farmers-card">
+            <h2>Recent Farmers</h2>
+            <hr />
+            <div class="farmers-list">
+                @if (Model.RecentFarmers != null && Model.RecentFarmers.Any())
+                {
+                    @foreach (var farmer in Model.RecentFarmers)
+                    {
+                        <div class="farmer-item">
+                            <div class="farmer-avatar" style="background-color: @GetAvatarColor(farmer.FarmerId); color: @GetAvatarTextColor(farmer.FarmerId); border-color: @GetAvatarBorderColor(farmer.FarmerId);">
+                                @if (!string.IsNullOrEmpty(farmer.OwnerName))
+                                {
+                                    var nameParts = farmer.OwnerName.Split(' ');
+                                    @(nameParts.Length >= 2 ? nameParts[0][0].ToString() + nameParts[1][0].ToString() : farmer.OwnerName.Substring(0, Math.Min(2, farmer.OwnerName.Length)).ToUpper())
+                                }
+                                else
+                                {
+                                    <text>??</text>
+                                }
+                            </div>
+                            <div class="farmer-info">
+                                <div class="farmer-name">@farmer.OwnerName</div>
+                                <div class="farmer-farm">@farmer.FarmName</div>
+                            </div>
+                            <a href="@Url.Action("FarmerDetails", "Employee", new { farmerId = farmer.FarmerId })" class="view-button">View</a>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <p>No farmers registered yet.</p>
+                    </div>
+                }
+            </div>
+            <a href="@Url.Action("ManageFarmers", "Employee")" class="view-all-button">View All Farmers</a>
+        </div>
+
+        <!-- Activity Feed Section -->
+        <div class="activity-feed-card">
+            <h2>Activity Feed</h2>
+            <hr />
+            <div class="activity-timeline">
+                @if (Model.RecentActivities != null && Model.RecentActivities.Any())
+                {
+                    @foreach (var activity in Model.RecentActivities)
+                    {
+                        <div class="activity-item">
+                            <div class="activity-marker" style="background-color: @activity.Color"></div>
+                            <div class="activity-content">
+                                <div class="activity-title">@activity.Title</div>
+                                <div class="activity-description">@activity.Description</div>
+                                <div class="activity-time">@activity.Time</div>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <p>No recent activities.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Action Buttons -->
+    <div class="quick-actions">
+        <a href="@Url.Action("AddFarmer", "Employee")" class="btn btn-primary">Add New Farmer</a>
+        <a href="@Url.Action("GenerateReport", "Employee")" class="btn btn-outline">Generate Report</a>
+    </div>
+</div>
+
+@functions {
+    private string GetAvatarColor(int farmerId)
+    {
+        var colors = new[] { "#E8F5E9", "#FFF3E0", "#E1F5FE", "#F3E5F5", "#FCE4EC", "#E3F2FD" };
+        return colors[farmerId % colors.Length];
+    }
+
+    private string GetAvatarTextColor(int farmerId)
+    {
+        var colors = new[] { "#4CAF50", "#FF9800", "#29B6F6", "#9C27B0", "#E91E63", "#2196F3" };
+        return colors[farmerId % colors.Length];
+    }
+
+    private string GetAvatarBorderColor(int farmerId)
+    {
+        var colors = new[] { "#4CAF50", "#FF9800", "#29B6F6", "#9C27B0", "#E91E63", "#2196F3" };
+        return colors[farmerId % colors.Length];
+    }
 }

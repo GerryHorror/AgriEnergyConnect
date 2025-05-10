@@ -36,5 +36,9 @@ namespace AgriEnergyConnect.Services.Interfaces
         //   email - The email address to check for existence.
         // Returns true if the email address exists, or false otherwise.
         Task<bool> EmailExistsAsync(string email);
+
+        // Retrieves all users in the system.
+        // Returns a list of User objects representing all users.
+        Task<IEnumerable<User>> GetAllUsersAsync();
     }
 }
