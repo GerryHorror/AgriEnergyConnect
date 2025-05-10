@@ -1,5 +1,89 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model AgriEnergyConnect.Models.ViewModels.ProductViewModel
+
 @{
+    ViewData["Title"] = "Add Product";
+    Layout = "_FarmerLayout";
+}
+
+<div class="content-wrapper">
+    <div class="add-product-section">
+        <h2>Add New Product</h2>
+        <hr />
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+        }
+
+        <form asp-action="AddProduct" method="post" class="product-form" novalidate>
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <div class="form-row">
+                <!-- Product Name -->
+                <div class="form-group col-md-6">
+                    <label asp-for="Name"></label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">T</span>
+                        <input asp-for="Name" class="form-control" placeholder="Enter product name" />
+                    </div>
+                    <span asp-validation-for="Name" class="text-danger small"></span>
+                </div>
+
+                <!-- Category -->
+                <div class="form-group col-md-6">
+                    <label asp-for="Category"></label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">≡</span>
+                        <select asp-for="Category" class="form-control">
+                            <option value="">Select category</option>
+                            <option value="Grains">Grains</option>
+                            <option value="Vegetables">Vegetables</option>
+                            <option value="Dairy">Dairy</option>
+                            <option value="Organic">Organic</option>
+                        </select>
+                    </div>
+                    <span asp-validation-for="Category" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <!-- Production Date -->
+                <div class="form-group col-md-6">
+                    <label asp-for="ProductionDate"></label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">📅</span>
+                        <input asp-for="ProductionDate" class="form-control" type="date" />
+                    </div>
+                    <span asp-validation-for="ProductionDate" class="text-danger small"></span>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group col-md-6">
+                    <label asp-for="Description"></label>
+                    <div class="input-with-icon">
+                        <span class="input-icon">✎</span>
+                        <input asp-for="Description" class="form-control" placeholder="Optional description" />
+                    </div>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+            </div>
+
+            <div class="form-buttons">
+                <button type="submit" class="btn btn-primary">Add Product</button>
+                <button type="reset" class="btn btn-outline">Reset</button>
+                <span class="required-note">* Required fields</span>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }
