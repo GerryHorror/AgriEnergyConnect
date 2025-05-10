@@ -6,77 +6,85 @@
 }
 
 <div class="dashboard-content">
-    <div class="card p-4 shadow-sm rounded bg-white">
-        <h2 class="mb-3 text-primary fw-bold">Add New Farmer</h2>
+    <div class="employee-addfarmer-card">
+        <h2>Add New Farmer</h2>
+        <p class="subtitle">Create a new farmer account with access to the platform</p>
 
         @if (TempData["SuccessMessage"] != null)
         {
-            <div class="alert alert-success" role="alert">
-                @TempData["SuccessMessage"]
-            </div>
+            <div class="alert alert-success employee-addfarmer-alert">@TempData["SuccessMessage"]</div>
         }
         @if (TempData["ErrorMessage"] != null)
         {
-            <div class="alert alert-danger" role="alert">
-                @TempData["ErrorMessage"]
-            </div>
+            <div class="alert alert-danger employee-addfarmer-alert">@TempData["ErrorMessage"]</div>
         }
 
-        <hr />
-
         <form asp-action="AddFarmer" method="post" novalidate>
-            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            <div asp-validation-summary="ModelOnly" class="text-danger employee-addfarmer-validation mb-3"></div>
 
+            <!-- Personal Information -->
+            <h5 class="employee-addfarmer-section-title">Personal Information</h5>
+            <hr class="employee-addfarmer-divider" />
             <div class="row">
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        <label asp-for="FirstName" class="form-label"></label>
-                        <input asp-for="FirstName" class="form-control" />
-                        <span asp-validation-for="FirstName" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label asp-for="LastName" class="form-label"></label>
-                        <input asp-for="LastName" class="form-control" />
-                        <span asp-validation-for="LastName" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label asp-for="Email" class="form-label"></label>
-                        <input asp-for="Email" class="form-control" />
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label asp-for="PhoneNumber" class="form-label"></label>
-                        <input asp-for="PhoneNumber" class="form-control" />
-                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
-                    </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="FirstName" class="form-label employee-addfarmer-form-label"></label>
+                    <input asp-for="FirstName" class="form-control employee-addfarmer-input" />
+                    <span asp-validation-for="FirstName" class="employee-addfarmer-validation"></span>
                 </div>
-
-                <div class="col-md-6">
-                    <div class="form-group mb-3">
-                        <label asp-for="Username" class="form-label"></label>
-                        <input asp-for="Username" class="form-control" />
-                        <span asp-validation-for="Username" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label asp-for="Password" class="form-label"></label>
-                        <input asp-for="Password" class="form-control" />
-                        <span asp-validation-for="Password" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label asp-for="FarmName" class="form-label"></label>
-                        <input asp-for="FarmName" class="form-control" />
-                        <span asp-validation-for="FarmName" class="text-danger"></span>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label asp-for="Location" class="form-label"></label>
-                        <input asp-for="Location" class="form-control" />
-                        <span asp-validation-for="Location" class="text-danger"></span>
-                    </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="LastName" class="form-label employee-addfarmer-form-label"></label>
+                    <input asp-for="LastName" class="form-control employee-addfarmer-input" />
+                    <span asp-validation-for="LastName" class="employee-addfarmer-validation"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Email" class="form-label employee-addfarmer-form-label"></label>
+                    <input asp-for="Email" class="form-control employee-addfarmer-input" />
+                    <span asp-validation-for="Email" class="employee-addfarmer-validation"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="PhoneNumber" class="form-label employee-addfarmer-form-label"></label>
+                    <input asp-for="PhoneNumber" class="form-control employee-addfarmer-input" />
+                    <span asp-validation-for="PhoneNumber" class="employee-addfarmer-validation"></span>
                 </div>
             </div>
 
-            <div class="mt-4 d-flex justify-content-end">
-                <button type="submit" class="btn btn-primary">Add Farmer</button>
+            <!-- Farm Details -->
+            <h5 class="employee-addfarmer-section-title">Farm Details</h5>
+            <hr class="employee-addfarmer-divider" />
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="FarmName" class="form-label employee-addfarmer-form-label"></label>
+                    <input asp-for="FarmName" class="form-control employee-addfarmer-input" />
+                    <span asp-validation-for="FarmName" class="employee-addfarmer-validation"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Location" class="form-label employee-addfarmer-form-label"></label>
+                    <input asp-for="Location" class="form-control employee-addfarmer-input" />
+                    <span asp-validation-for="Location" class="employee-addfarmer-validation"></span>
+                </div>
+            </div>
+
+            <!-- Account Setup -->
+            <h5 class="employee-addfarmer-section-title">Account Setup</h5>
+            <hr class="employee-addfarmer-divider" />
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Username" class="form-label employee-addfarmer-form-label"></label>
+                    <input asp-for="Username" class="form-control employee-addfarmer-input" />
+                    <span asp-validation-for="Username" class="employee-addfarmer-validation"></span>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label asp-for="Password" class="form-label employee-addfarmer-form-label"></label>
+                    <input asp-for="Password" class="form-control employee-addfarmer-input" />
+                    <span asp-validation-for="Password" class="employee-addfarmer-validation"></span>
+                </div>
+            </div>
+
+            <p class="employee-addfarmer-note">* Required fields</p>
+
+            <div class="employee-addfarmer-btn-group">
+                <a href="@Url.Action("Dashboard", "Employee")" class="btn employee-addfarmer-btn-cancel">Cancel</a>
+                <button type="submit" class="btn employee-addfarmer-btn-submit">Add Farmer</button>
             </div>
         </form>
     </div>
