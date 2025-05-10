@@ -1,0 +1,116 @@
+﻿@model AgriEnergyConnect.Models.ViewModels.FarmerProductsViewModel
+
+@{
+    ViewData["Title"] = "My Products";
+    Layout = "_FarmerLayout";
+}
+
+<div class="myproducts-page content-wrapper">
+    <!-- Breadcrumb -->
+    <div class="mb-3">
+        <span class="text-muted small">Dashboard</span> /
+        <span class="text-dark small fw-bold">My Products</span>
+    </div>
+
+    <!-- Header and Add Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="page-title">My Products</h2>
+            <p class="subtitle">@Model.FarmName | <strong>@Model.TotalProducts</strong> product@(Model.TotalProducts == 1 ? "" : "s")</p>
+        </div>
+        <a asp-action="AddProduct" class="btn btn-add-product">+ Add Product</a>
+    </div>
+
+    <!-- Filter Section -->
+    <form asp-action="Products" method="get" class="filter-card">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <label class="form-label">Search</label>
+                <input name="searchTerm" value="@Model.SearchTerm" class="form-control" placeholder="Search products..." />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Start Date</label>
+                <input name="filterStartDate" type="date" value="@Model.FilterStartDate?.ToString("yyyy-MM-dd")" class="form-control" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">End Date</label>
+                <input name="filterEndDate" type="date" value="@Model.FilterEndDate?.ToString("yyyy-MM-dd")" class="form-control" />
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Category</label>
+                <select name="selectedCategory" class="form-select">
+                    <option value="">All Categories</option>
+                    <option value="Grains" selected="@("Grains" == Model.SelectedCategory)">Grains</option>
+                    <option value="Vegetables" selected="@("Vegetables" == Model.SelectedCategory)">Vegetables</option>
+                    <option value="Dairy" selected="@("Dairy" == Model.SelectedCategory)">Dairy</option>
+                    <option value="Organic" selected="@("Organic" == Model.SelectedCategory)">Organic</option>
+                </select>
+            </div>
+
+            <div class="col-md-2 align-self-end">
+                <button type="submit" class="btn btn-filter w-100">Filter</button>
+            </div>
+        </div>
+    </form>
+
+    <!-- Products Table -->
+    <div class="products-card">
+        @if (Model.Products != null && Model.Products.Any())
+        {
+            <div class="table-responsive">
+                <table class="table align-middle">
+                    <thead>
+                        <tr>
+                            <th class="ps-3">Product Name</th>
+                            <th>Category</th>
+                            <th>Production Date</th>
+                            <th>Description</th>
+                            <th class="text-end pe-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var product in Model.Products)
+                        {
+                            <tr>
+                                <td class="fw-semibold ps-3">@product.Name</td>
+                                <td>
+                                    <span class="badge-pill @GetBadgeClass(product.Category)">
+                                        @product.Category
+                                    </span>
+                                </td>
+                                <td>@product.ProductionDate.ToString("yyyy-MM-dd")</td>
+                                <td>@product.Description</td>
+                                <td class="text-end pe-3">
+                                    <a asp-action="EditProduct" asp-route-id="@product.ProductId" class="btn btn-edit">Edit</a>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <div class="no-results">
+                No products found. Try adjusting your filters or add a new product.
+            </div>
+        }
+    </div>
+</div>
+
+@functions {
+    private string GetBadgeClass(string category)
+    {
+        return category?.ToLower() switch
+        {
+            "organic" => "badge-organic",
+            "dairy" => "badge-dairy",
+            "grains" => "badge-grains",
+            "vegetables" => "badge-vegetables",
+            _ => "badge-secondary"
+        };
+    }
+}

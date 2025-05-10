@@ -177,25 +177,55 @@ namespace AgriEnergyConnect.Controllers
 
         // Displays all products associated with the logged-in farmer.
         [HttpGet]
-        public async Task<IActionResult> Products()
+        public async Task<IActionResult> Products(string searchTerm, string selectedCategory, DateTime? filterStartDate, DateTime? filterEndDate)
         {
             try
             {
                 var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-                var farmer = await _farmerService.GetFarmerByUserIdAsync(userId);
+                var farmerDTO = await _farmerService.GetFarmerDTOByUserIdAsync(userId);
 
-                if (farmer == null)
+                if (farmerDTO == null)
                     return NotFound();
 
-                ViewBag.Farmer = farmer;
+                // Prepare filter DTO
+                var filter = new ProductFilterDTO
+                {
+                    FarmerId = farmerDTO.FarmerId,
+                    SearchTerm = searchTerm,
+                    Category = selectedCategory,
+                    StartDate = filterStartDate,
+                    EndDate = filterEndDate
+                };
 
-                var products = await _productService.GetProductsByFarmerIdAsync(farmer.FarmerId);
-                return View(products);
+                var productDTOs = await _productService.GetFilteredProductDTOsAsync(filter);
+
+                var products = productDTOs.Select(p => new ProductViewModel
+                {
+                    ProductId = p.ProductId,
+                    Name = p.Name,
+                    Category = p.Category,
+                    Description = p.Description,
+                    ProductionDate = p.ProductionDate,
+                    FarmerId = p.FarmerId
+                }).ToList();
+
+                var viewModel = new FarmerProductsViewModel
+                {
+                    FarmName = farmerDTO.FarmName,
+                    TotalProducts = products.Count,
+                    Products = products,
+                    SearchTerm = searchTerm,
+                    SelectedCategory = selectedCategory,
+                    FilterStartDate = filterStartDate,
+                    FilterEndDate = filterEndDate
+                };
+
+                return View("MyProducts", viewModel);
             }
             catch (Exception ex)
             {
                 TempData["ErrorMessage"] = $"Error loading products: {ex.Message}";
-                return View(Array.Empty<Product>());
+                return View("MyProducts", new FarmerProductsViewModel());
             }
         }
 
