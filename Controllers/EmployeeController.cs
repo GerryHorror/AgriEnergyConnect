@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using AgriEnergyConnect.Models.ViewModels;
 using AgriEnergyConnect.Models;
 using AgriEnergyConnect.DTOs;
+using AgriEnergyConnect.Services.Implementation;
+using System.Security.Claims;
 
 namespace AgriEnergyConnect.Controllers
 {
@@ -18,14 +20,18 @@ namespace AgriEnergyConnect.Controllers
 
         private readonly IProductService _productService;
 
+        // The AuthService is used for user authentication and retrieval.
+        private readonly IAuthService _authService;
+
         // Constructor for the EmployeeController class.
         // Parameters:
         //   farmerService - The service for managing farmers.
         //   productService - The service for managing products.
-        public EmployeeController(IFarmerService farmerService, IProductService productService)
+        public EmployeeController(IFarmerService farmerService, IProductService productService, IAuthService authService)
         {
             _farmerService = farmerService;
             _productService = productService;
+            _authService = authService;
         }
 
         // Displays the employee dashboard with summary data.
@@ -33,18 +39,144 @@ namespace AgriEnergyConnect.Controllers
         [HttpGet]
         public async Task<IActionResult> Dashboard()
         {
-            var farmers = await _farmerService.GetAllFamersAsync();
-            var farmerSummaries = await _farmerService.GetAllFarmerSummariesAsync();
-            var products = await _productService.GetAllProductsAsync();
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var user = await _authService.GetUserByIdAsync(userId);
 
-            ViewBag.TotalFarmers = farmers.Count();
-            ViewBag.TotalProducts = products.Count();
-            ViewBag.RecentProducts = farmers.OrderByDescending(f => f.User.CreatedDate).Take(4).ToList();
+                if (user == null)
+                    return NotFound();
 
-            // Calculate active users (this is for demonstration purposes)
-            ViewBag.ActiveUsers = farmers.Count(f => f.User.IsActive);
+                // Set ViewBag employee data
+                ViewBag.Employee = new { User = user };
 
-            return View();
+                // Get all farmers and products for statistics
+                var farmers = await _farmerService.GetAllFamersAsync();
+                var farmerList = farmers.ToList();
+                var products = await _productService.GetAllProductsAsync();
+                var productList = products.ToList();
+                var allUsers = await _authService.GetAllUsersAsync();
+                var userList = allUsers.ToList();
+
+                // Calculate statistics
+                var totalFarmers = farmerList.Count;
+                var totalProducts = productList.Count;
+                var activeUsers = userList.Count(u => u.IsActive);
+                var totalUsers = userList.Count;
+
+                // Get all farmers for "Recent Farmers" section (not just recent additions)
+                var recentFarmers = farmerList
+                    .OrderByDescending(f => f.User?.CreatedDate ?? DateTime.MinValue)
+                    .Take(4)
+                    .ToList();
+
+                // Get recent products (last 7 days)
+                var recentProducts = productList
+                    .Where(p => p.CreatedDate >= DateTime.Now.AddDays(-7))
+                    .GroupBy(p => p.FarmerId)
+                    .Select(g => new { FarmerId = g.Key, Count = g.Count(), LastUpdate = g.Max(p => p.CreatedDate) })
+                    .ToList();
+
+                // Set ViewBag statistics
+                ViewBag.TotalFarmers = totalFarmers;
+                ViewBag.TotalProducts = totalProducts;
+                ViewBag.ActiveUsers = activeUsers;
+                ViewBag.NewFarmers = recentFarmers.Count(f => f.User?.CreatedDate >= DateTime.Now.AddDays(-7));
+                ViewBag.NewProducts = recentProducts.Sum(p => p.Count);
+                ViewBag.ActivePercentage = totalUsers > 0 ? Math.Round((decimal)activeUsers / totalUsers * 100, 1) : 0;
+
+                // Create recent activities using the static methods
+                var activities = new List<ActivityItem>();
+
+                // Add recent farmer additions (for the past week)
+                var newFarmers = recentFarmers.Where(f => f.User?.CreatedDate >= DateTime.Now.AddDays(-7)).Take(1);
+                foreach (var farmer in newFarmers)
+                {
+                    if (farmer.User != null)
+                    {
+                        activities.Add(ActivityItem.NewFarmerAdded(
+                            $"{farmer.User.FirstName} {farmer.User.LastName}",
+                            farmer.User.CreatedDate
+                        ));
+                    }
+                }
+
+                // Add recent product updates
+                foreach (var productGroup in recentProducts.Take(1))
+                {
+                    var farmer = farmerList.FirstOrDefault(f => f.FarmerId == productGroup.FarmerId);
+                    if (farmer?.User != null)
+                    {
+                        activities.Add(ActivityItem.ProductUpdate(
+                            $"{farmer.User.FirstName} {farmer.User.LastName}",
+                            productGroup.Count,
+                            productGroup.LastUpdate
+                        ));
+                    }
+                }
+
+                // Add a sample report activity
+                activities.Add(ActivityItem.ReportGenerated(
+                    "Monthly product",
+                    DateTime.Now.AddDays(-1).AddHours(-7).AddMinutes(-20)
+                ));
+
+                // Create the view model
+                var viewModel = new EmployeeDashboardViewModel
+                {
+                    Employee = user,
+                    TotalFarmers = totalFarmers,
+                    TotalProducts = totalProducts,
+                    ActiveUsers = activeUsers,
+                    NewFarmers = ViewBag.NewFarmers,
+                    NewProducts = ViewBag.NewProducts,
+                    ActivePercentage = ViewBag.ActivePercentage,
+                    // Map farmers to FarmerSummaryDTO ensuring to include the user details
+                    RecentFarmers = recentFarmers.Select(f => new FarmerSummaryDTO
+                    {
+                        FarmerId = f.FarmerId,
+                        FarmName = f.FarmName,
+                        Location = f.Location,
+                        OwnerName = f.User != null ? $"{f.User.FirstName} {f.User.LastName}" : "Unknown",
+                        ProductCount = f.Products?.Count ?? 0
+                    }).ToList(),
+                    RecentActivities = activities
+                };
+
+                return View(viewModel);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error loading dashboard: {ex.Message}";
+                return View(new EmployeeDashboardViewModel());
+            }
+        }
+
+        // Helper method to parse the time string for sorting
+        private DateTime ParseTime(string timeString)
+        {
+            if (timeString == "Just now")
+                return DateTime.Now;
+            if (timeString.Contains("minutes ago"))
+                return DateTime.Now.AddMinutes(-int.Parse(timeString.Split(' ')[0]));
+            if (timeString.Contains("Today"))
+            {
+                var timePart = timeString.Split(',')[1].Trim();
+                return DateTime.Parse($"{DateTime.Now.ToShortDateString()} {timePart}");
+            }
+            if (timeString.Contains("Yesterday"))
+            {
+                var timePart = timeString.Split(',')[1].Trim();
+                return DateTime.Parse($"{DateTime.Now.AddDays(-1).ToShortDateString()} {timePart}");
+            }
+            if (timeString.Contains("days ago"))
+            {
+                var days = int.Parse(timeString.Split(' ')[0]);
+                return DateTime.Now.AddDays(-days);
+            }
+
+            // Default to parsing the full date string
+            return DateTime.TryParse(timeString, out DateTime result) ? result : DateTime.Now;
         }
 
         // Displays the form for adding a new farmer.
