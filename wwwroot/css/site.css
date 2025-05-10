@@ -20,3 +20,27 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.icon-md {
+    font-size: 1.1rem;
+}
+
+.icon-lg {
+    font-size: 1.4rem;
+}
+
+.icon-green {
+    color: #4CAF50;
+}
+
+.icon-blue {
+    color: #2196F3;
+}
+
+.icon-orange {
+    color: #FF9800;
+}
+
+.icon-muted {
+    color: #888888;
+}

@@ -63,15 +63,19 @@
                     {
                         <div class="farmer-item">
                             <div class="farmer-avatar" style="background-color: @GetAvatarColor(farmer.FarmerId); color: @GetAvatarTextColor(farmer.FarmerId); border-color: @GetAvatarBorderColor(farmer.FarmerId);">
-                                @if (!string.IsNullOrEmpty(farmer.OwnerName))
-                                {
-                                    var nameParts = farmer.OwnerName.Split(' ');
-                                    @(nameParts.Length >= 2 ? nameParts[0][0].ToString() + nameParts[1][0].ToString() : farmer.OwnerName.Substring(0, Math.Min(2, farmer.OwnerName.Length)).ToUpper())
+                                @{
+                                    var initials = "??";
+                                    var nameParts = (farmer?.OwnerName ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                                    if (nameParts.Length >= 2)
+                                    {
+                                        initials = $"{nameParts[0][0]}{nameParts[1][0]}".ToUpper();
+                                    }
+                                    else if (nameParts.Length == 1 && nameParts[0].Length > 0)
+                                    {
+                                        initials = nameParts[0].Substring(0, Math.Min(2, nameParts[0].Length)).ToUpper();
+                                    }
                                 }
-                                else
-                                {
-                                    <text>??</text>
-                                }
+                                @initials
                             </div>
                             <div class="farmer-info">
                                 <div class="farmer-name">@farmer.OwnerName</div>
@@ -122,7 +126,7 @@
 
     <!-- Quick Action Buttons -->
     <div class="quick-actions">
-        <a href="@Url.Action("AddFarmer", "Employee")" class="btn btn-primary">Add New Farmer</a>
+        <a asp-action="AddFarmer" asp-controller="Employee" class="btn btn-primary">Add Farmer</a>
         <a href="@Url.Action("GenerateReport", "Employee")" class="btn btn-outline">Generate Report</a>
     </div>
 </div>

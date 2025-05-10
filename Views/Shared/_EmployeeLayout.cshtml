@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Agri-Energy Connect</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/css/employee-dashboard.css" />
+    <link rel="stylesheet" href="~/css/employee-addfarmer.css" />
 </head>
 <body class="employee-body">
     <!-- Sidebar -->
@@ -23,37 +24,43 @@
         <nav class="sidebar-nav">
             <ul>
                 <li>
-                    <a asp-controller="Employee" asp-action="Dashboard" class="nav-link active">
+                    <a asp-controller="Employee" asp-action="Dashboard"
+                       class="nav-link @(IsActive("Employee", "Dashboard"))">
                         <span class="nav-icon">⬤</span>
                         Dashboard
                     </a>
                 </li>
                 <li>
-                    <a asp-controller="Employee" asp-action="ManageFarmers" class="nav-link">
+                    <a asp-controller="Employee" asp-action="ManageFarmers"
+                       class="nav-link @(IsActive("Employee", "ManageFarmers"))">
                         <span class="nav-icon">○</span>
                         Farmers
                     </a>
                 </li>
                 <li>
-                    <a asp-controller="Employee" asp-action="AddFarmer" class="nav-link">
+                    <a asp-controller="Employee" asp-action="AddFarmer"
+                       class="nav-link @(IsActive("Employee", "AddFarmer"))">
                         <span class="nav-icon">＋</span>
                         Add Farmer
                     </a>
                 </li>
                 <li>
-                    <a asp-controller="Employee" asp-action="SearchProducts" class="nav-link">
+                    <a asp-controller="Employee" asp-action="SearchProducts"
+                       class="nav-link @(IsActive("Employee", "SearchProducts"))">
                         <span class="nav-icon">◈</span>
                         Products
                     </a>
                 </li>
                 <li>
-                    <a asp-controller="Employee" asp-action="Reports" class="nav-link">
+                    <a asp-controller="Employee" asp-action="Reports"
+                       class="nav-link @(IsActive("Employee", "Reports"))">
                         <span class="nav-icon">◉</span>
                         Reports
                     </a>
                 </li>
                 <li style="margin-top: 200px;">
-                    <a asp-controller="Account" asp-action="Logout" class="nav-link">
+                    <a asp-controller="Account" asp-action="Logout"
+                       class="nav-link">
                         <span class="nav-icon">⇥</span>
                         Logout
                     </a>
@@ -85,5 +92,13 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js"></script>
     @await RenderSectionAsync("Scripts", required: false)
+    @functions {
+        private string IsActive(string controller, string action)
+        {
+            var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+            var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+            return (currentController == controller && currentAction == action) ? "active" : "";
+        }
+    }
 </body>
 </html>
