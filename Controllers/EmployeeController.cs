@@ -6,6 +6,7 @@ using AgriEnergyConnect.Models;
 using AgriEnergyConnect.DTOs;
 using AgriEnergyConnect.Services.Implementation;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 
 namespace AgriEnergyConnect.Controllers
 {
@@ -278,8 +279,16 @@ namespace AgriEnergyConnect.Controllers
         [HttpGet]
         public async Task<IActionResult> FarmerDetails(int farmerId)
         {
-            var farmerDTO = await _farmerService.GetFarmerDTOByIdAsync(farmerId);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var user = await _authService.GetUserByIdAsync(userId);
 
+            if (user == null)
+                return NotFound();
+
+            // Set ViewBag employee data
+            ViewBag.Employee = new { User = user };
+
+            var farmerDTO = await _farmerService.GetFarmerDTOByIdAsync(farmerId);
             if (farmerDTO == null)
                 return NotFound();
 
@@ -319,10 +328,151 @@ namespace AgriEnergyConnect.Controllers
 
         // Displays a list of all farmers for management purposes.
         [HttpGet]
-        public async Task<IActionResult> ManageFarmers()
+        public async Task<IActionResult> ManageFarmers(string searchTerm = "", string locationFilter = "", int page = 1, int pageSize = 10)
         {
-            var farmers = await _farmerService.GetAllFarmerSummariesAsync();
-            return View(farmers);
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var user = await _authService.GetUserByIdAsync(userId);
+
+            if (user == null)
+                return NotFound();
+
+            // Set ViewBag employee data
+            ViewBag.Employee = new { User = user };
+
+            // Get all farmers with their complete information
+            var farmers = await _farmerService.GetAllFamersAsync();
+            var farmerList = farmers.ToList();
+
+            // Create farmer summaries with correct IsActive and ProductCount
+            var farmerSummaries = farmerList.Select(farmer => new FarmerSummaryDTO
+            {
+                FarmerId = farmer.FarmerId,
+                FarmName = farmer.FarmName,
+                Location = farmer.Location,
+                OwnerName = farmer.User != null
+                    ? $"{farmer.User.FirstName} {farmer.User.LastName}".Trim()
+                    : "Unknown Farmer",
+                ProductCount = farmer.Products?.Count ?? 0,
+                IsActive = farmer.User?.IsActive ?? false // This is the fix for IsActive
+            }).ToList();
+
+            // Apply filters
+            if (!string.IsNullOrEmpty(searchTerm))
+            {
+                farmerSummaries = farmerSummaries.Where(f =>
+                    f.OwnerName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    f.FarmName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                    f.Location.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+            }
+
+            if (!string.IsNullOrEmpty(locationFilter))
+            {
+                farmerSummaries = farmerSummaries.Where(f =>
+                    f.Location.Equals(locationFilter, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+            }
+
+            // Get unique locations for the filter dropdown
+            var uniqueLocations = farmerSummaries.Select(f => f.Location)
+                .Distinct()
+                .OrderBy(l => l)
+                .ToList();
+
+            // Implement pagination
+            var totalFarmers = farmerSummaries.Count;
+            var totalPages = (int)Math.Ceiling(totalFarmers / (double)pageSize);
+            var paginatedFarmers = farmerSummaries
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Set ViewBag data for the view
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.SelectedLocation = locationFilter;
+            ViewBag.UniqueLocations = uniqueLocations;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalFarmers = totalFarmers;
+
+            return View(paginatedFarmers);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditFarmer(int farmerId)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var user = await _authService.GetUserByIdAsync(userId);
+
+            if (user == null)
+                return NotFound();
+
+            // Set ViewBag employee data
+            ViewBag.Employee = new { User = user };
+
+            var farmer = await _farmerService.GetFarmerByIdAsync(farmerId);
+            if (farmer == null)
+                return NotFound();
+
+            var viewModel = new FarmerViewModel
+            {
+                FarmName = farmer.FarmName,
+                Location = farmer.Location,
+                FirstName = farmer.User.FirstName,
+                LastName = farmer.User.LastName,
+                Email = farmer.User.Email,
+                PhoneNumber = farmer.User.PhoneNumber,
+                Username = farmer.User.Username
+            };
+
+            ViewBag.FarmerId = farmerId;
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditFarmer(int farmerId, FarmerViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.FarmerId = farmerId;
+                return View(model);
+            }
+
+            try
+            {
+                var farmer = await _farmerService.GetFarmerByIdAsync(farmerId);
+                if (farmer == null)
+                    return NotFound();
+
+                // Update farmer information
+                farmer.FarmName = model.FarmName;
+                farmer.Location = model.Location;
+                farmer.User.FirstName = model.FirstName;
+                farmer.User.LastName = model.LastName;
+                farmer.User.Email = model.Email;
+                farmer.User.PhoneNumber = model.PhoneNumber;
+                farmer.User.Username = model.Username;
+
+                // Only update password if a new one is provided
+                if (!string.IsNullOrEmpty(model.Password))
+                {
+                    var hasher = new PasswordHasher<User>();
+                    farmer.User.PasswordHash = hasher.HashPassword(farmer.User, model.Password);
+                }
+
+                await _farmerService.UpdateFarmerAsync(farmer);
+
+                TempData["SuccessMessage"] = $"Farmer {model.FirstName} {model.LastName} was successfully updated.";
+                return RedirectToAction(nameof(ManageFarmers));
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"An error occurred while updating the farmer: {ex.Message}");
+                ViewBag.FarmerId = farmerId;
+                return View(model);
+            }
         }
     }
 }

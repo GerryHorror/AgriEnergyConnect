@@ -63,7 +63,8 @@ namespace AgriEnergyConnect.Helpers
                 FarmName = farmer.FarmName,
                 Location = farmer.Location,
                 OwnerName = $"{farmer.User?.FirstName ?? "Unknown"} {farmer.User?.LastName ?? "Farmer"}".Trim(),
-                ProductCount = farmer.Products?.Count ?? 0
+                ProductCount = farmer.Products?.Count ?? 0,
+                IsActive = farmer.User?.IsActive ?? false
             };
         }
 

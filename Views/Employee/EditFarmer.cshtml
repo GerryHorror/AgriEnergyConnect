@@ -1,0 +1,278 @@
+﻿@model AgriEnergyConnect.Models.ViewModels.FarmerViewModel
+
+@{
+    ViewData["Title"] = "Edit Farmer";
+    Layout = "_EmployeeLayout";
+}
+
+<div class="dashboard-content">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="title-section">
+            <h1>Edit Farmer</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Dashboard")">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("ManageFarmers")">Manage Farmers</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Edit</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="@Url.Action("FarmerDetails", new { farmerId = ViewBag.FarmerId })" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-2"></i> Back to Details
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">Update Farmer Information</h5>
+        </div>
+        <div class="card-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["ErrorMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <form asp-action="EditFarmer" asp-route-farmerId="@ViewBag.FarmerId" method="post" novalidate>
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                <!-- Personal Information Section -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <h6 class="text-uppercase text-muted fw-bold mb-3">Personal Information</h6>
+                    </div>
+
+                    <!-- First Name -->
+                    <div class="col-md-6">
+                        <label asp-for="FirstName" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fa fa-user"></i>
+                            </span>
+                            <input asp-for="FirstName" class="form-control" />
+                        </div>
+                        <span asp-validation-for="FirstName" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Last Name -->
+                    <div class="col-md-6">
+                        <label asp-for="LastName" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fa fa-user"></i>
+                            </span>
+                            <input asp-for="LastName" class="form-control" />
+                        </div>
+                        <span asp-validation-for="LastName" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fa fa-envelope"></i>
+                            </span>
+                            <input asp-for="Email" class="form-control" />
+                        </div>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Phone Number -->
+                    <div class="col-md-6">
+                        <label asp-for="PhoneNumber" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fa fa-phone"></i>
+                            </span>
+                            <input asp-for="PhoneNumber" class="form-control" />
+                        </div>
+                        <span asp-validation-for="PhoneNumber" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- Farm Information Section -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <h6 class="text-uppercase text-muted fw-bold mb-3">Farm Information</h6>
+                    </div>
+
+                    <!-- Farm Name -->
+                    <div class="col-md-6">
+                        <label asp-for="FarmName" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fa fa-tractor"></i>
+                            </span>
+                            <input asp-for="FarmName" class="form-control" />
+                        </div>
+                        <span asp-validation-for="FarmName" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Location -->
+                    <div class="col-md-6">
+                        <label asp-for="Location" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fa fa-map-marker-alt"></i>
+                            </span>
+                            <input asp-for="Location" class="form-control" />
+                        </div>
+                        <span asp-validation-for="Location" class="text-danger small"></span>
+                    </div>
+                </div>
+
+                <!-- Account Information Section -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <h6 class="text-uppercase text-muted fw-bold mb-3">Account Information</h6>
+                    </div>
+
+                    <!-- Username -->
+                    <div class="col-md-6">
+                        <label asp-for="Username" class="form-label"></label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fa fa-user-circle"></i>
+                            </span>
+                            <input asp-for="Username" class="form-control" />
+                        </div>
+                        <span asp-validation-for="Username" class="text-danger small"></span>
+                    </div>
+
+                    <!-- Password (Optional) -->
+                    <div class="col-md-6">
+                        <label asp-for="Password" class="form-label">
+                            New Password (leave blank to keep current)
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fa fa-lock"></i>
+                            </span>
+                            <input asp-for="Password" type="password" class="form-control" />
+                        </div>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                        <div class="form-text">
+                            Minimum 6 characters required for new password
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="d-flex justify-content-between align-items-center pt-4 border-top">
+                    <div class="text-muted small">
+                        <i class="fa fa-info-circle me-1"></i>
+                        All fields are required except for new password
+                    </div>
+                    <div class="d-flex gap-2">
+                        <a href="@Url.Action("FarmerDetails", new { farmerId = ViewBag.FarmerId })"
+                           class="btn btn-outline-secondary">
+                            Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-save me-2"></i> Save Changes
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Styles -->
+<style>
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-right: none;
+    }
+
+    .form-control {
+        border-left: none;
+    }
+
+        .form-control:focus {
+            border-color: #00897B;
+            box-shadow: 0 0 0 0.1rem rgba(0, 137, 123, 0.25);
+        }
+
+            .form-control:focus + .input-group-text,
+            .form-control:focus ~ .input-group-text {
+                border-color: #00897B;
+                background-color: #e0f2f1;
+            }
+
+    .text-uppercase {
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+    }
+
+    .card {
+        border: none;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .btn-primary {
+        background-color: #00897B;
+        border-color: #00897B;
+    }
+
+        .btn-primary:hover {
+            background-color: #00796B;
+            border-color: #00796B;
+        }
+</style>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Add interactive behavior to the form
+        document.addEventListener('DOMContentLoaded', function() {
+            // Focus on first name field when page loads
+            document.getElementById('FirstName').focus();
+
+            // Add confirmation when leaving with unsaved changes
+            const form = document.querySelector('form');
+            const inputs = form.querySelectorAll('input');
+            let initialValues = {};
+
+            // Store initial values
+            inputs.forEach(input => {
+                initialValues[input.name] = input.value;
+            });
+
+            // Check for changes when leaving page
+            window.addEventListener('beforeunload', function(e) {
+                let hasChanges = false;
+                inputs.forEach(input => {
+                    if (input.value !== initialValues[input.name]) {
+                        hasChanges = true;
+                    }
+                });
+
+                if (hasChanges) {
+                    e.preventDefault();
+                    e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+                }
+            });
+
+            // Remove beforeunload when form is submitted
+            form.addEventListener('submit', function() {
+                window.removeEventListener('beforeunload', function(){});
+            });
+        });
+    </script>
+}
