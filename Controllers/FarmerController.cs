@@ -459,5 +459,37 @@ namespace AgriEnergyConnect.Controllers
                 return Json(new { error = ex.Message });
             }
         }
+
+        [HttpGet]
+        public async Task<IActionResult> GetEditProductModal(int id)
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var farmer = await _farmerService.GetFarmerByUserIdAsync(userId);
+                if (farmer == null)
+                    return Unauthorized();
+
+                var product = await _productService.GetProductByIdAsync(id);
+                if (product == null || product.FarmerId != farmer.FarmerId)
+                    return NotFound();
+
+                var viewModel = new ProductViewModel
+                {
+                    ProductId = product.ProductId,
+                    Name = product.Name,
+                    Category = product.Category,
+                    ProductionDate = product.ProductionDate,
+                    Description = product.Description,
+                    FarmerId = product.FarmerId
+                };
+
+                return PartialView("_EditProductModal", viewModel);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = $"Could not load product: {ex.Message}" });
+            }
+        }
     }
 }

@@ -84,7 +84,11 @@
                                 <td>@product.ProductionDate.ToString("yyyy-MM-dd")</td>
                                 <td>@product.Description</td>
                                 <td class="text-end pe-3">
-                                    <a asp-action="EditProduct" asp-route-id="@product.ProductId" class="btn btn-edit">Edit</a>
+                                    <button type="button"
+                                            class="btn btn-edit"
+                                            data-edit-product-id="@product.ProductId">
+                                        Edit
+                                    </button>
                                 </td>
                             </tr>
                         }
