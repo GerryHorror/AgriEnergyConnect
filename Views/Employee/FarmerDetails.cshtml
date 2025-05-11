@@ -1,0 +1,243 @@
+﻿@model AgriEnergyConnect.DTOs.FarmerDTO
+
+@{
+    ViewData["Title"] = "Farmer Details";
+    Layout = "_EmployeeLayout";
+}
+
+<div class="dashboard-content">
+    <!-- Page Header -->
+    <div class="page-header">
+        <div class="title-section">
+            <h1>Farmer Details</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="@Url.Action("Dashboard")">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("ManageFarmers")">Manage Farmers</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">@Model.FarmName</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="@Url.Action("EditFarmer", new { farmerId = Model.FarmerId })" class="btn btn-warning">
+                <i class="fa fa-edit me-2"></i> Edit Farmer
+            </a>
+            <a href="@Url.Action("ViewFarmerProducts", new { farmerId = Model.FarmerId })" class="btn btn-success">
+                <i class="fa fa-box me-2"></i> View Products
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Farmer Information Card -->
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Farmer Information</h5>
+                </div>
+                <div class="card-body text-center">
+                    <div class="farmer-avatar-large mx-auto mb-3"
+                         style="width: 100px; height: 100px; background-color: @GetAvatarColor(Model.FarmerId);
+                                color: @GetAvatarTextColor(Model.FarmerId); border-color: @GetAvatarBorderColor(Model.FarmerId);">
+                        @GetInitials(Model.FirstName, Model.LastName)
+                    </div>
+                    <h4 class="mb-1">@Model.FirstName @Model.LastName</h4>
+                    <p class="text-muted mb-3">@Model.FarmName</p>
+
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge bg-success mb-3">Active</span>
+                    }
+                    else
+                    {
+                        <span class="badge bg-secondary mb-3">Inactive</span>
+                    }
+
+                    <div class="d-grid">
+                        <a href="@Url.Action("Send", "Message", new { recipientId = Model.UserId })" class="btn btn-primary">
+                            <i class="fa fa-envelope me-2"></i> Send Message
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="col-md-8">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Contact Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="text-muted small">Email Address</label>
+                            <div class="border-bottom pb-2">
+                                <i class="fa fa-envelope me-2 text-primary"></i>
+                                <a href="mailto:@Model.Email" class="text-decoration-none">@Model.Email</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small">Phone Number</label>
+                            <div class="border-bottom pb-2">
+                                <i class="fa fa-phone me-2 text-success"></i>
+                                <a href="tel:@Model.PhoneNumber" class="text-decoration-none">@Model.PhoneNumber</a>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small">Farm Location</label>
+                            <div class="border-bottom pb-2">
+                                <i class="fa fa-map-marker-alt me-2 text-danger"></i>
+                                @Model.Location
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small">Username</label>
+                            <div class="border-bottom pb-2">
+                                <i class="fa fa-user me-2 text-info"></i>
+                                @Model.Username
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small">Member Since</label>
+                            <div class="border-bottom pb-2">
+                                <i class="fa fa-calendar me-2 text-warning"></i>
+                                @Model.JoinedDate.ToString("MMMM d, yyyy")
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small">Total Products</label>
+                            <div class="border-bottom pb-2">
+                                <i class="fa fa-boxes me-2 text-secondary"></i>
+                                @Model.ProductCount product@(Model.ProductCount == 1 ? "" : "s")
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Products -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Products</h5>
+                    <a href="@Url.Action("ViewFarmerProducts", new { farmerId = Model.FarmerId })"
+                       class="btn btn-sm btn-outline-primary">
+                        View All Products
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentProducts != null && Model.RecentProducts.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Product Name</th>
+                                        <th>Category</th>
+                                        <th>Production Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var product in Model.RecentProducts)
+                                    {
+                                        <tr>
+                                            <td>@product.Name</td>
+                                            <td>
+                                                <span class="badge" style="background-color: @GetCategoryColor(product.Category)">
+                                                    @product.Category
+                                                </span>
+                                            </td>
+                                            <td>@product.ProductionDate.ToString("yyyy-MM-dd")</td>
+                                            <td>
+                                                <a href="@Url.Action("ProductDetails", new { productId = product.ProductId })"
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fa fa-eye me-1"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center text-muted py-4">
+                            <i class="fa fa-box-open fa-2x mb-2"></i>
+                            <p>No products available yet</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .farmer-avatar-large {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        font-weight: bold;
+        border-radius: 50%;
+        border: 2px solid;
+    }
+
+    .border-bottom {
+        border-bottom: 1px solid #e0e0e0 !important;
+    }
+
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .table > tbody > tr:hover {
+        background-color: rgba(0, 137, 123, 0.03);
+    }
+</style>
+
+@functions {
+    private string GetAvatarColor(int farmerId)
+    {
+        var colors = new[] { "#E8F5E9", "#FFF3E0", "#E1F5FE", "#F3E5F5", "#FCE4EC", "#E3F2FD" };
+        return colors[farmerId % colors.Length];
+    }
+
+    private string GetAvatarTextColor(int farmerId)
+    {
+        var colors = new[] { "#4CAF50", "#FF9800", "#29B6F6", "#9C27B0", "#E91E63", "#2196F3" };
+        return colors[farmerId % colors.Length];
+    }
+
+    private string GetAvatarBorderColor(int farmerId)
+    {
+        var colors = new[] { "#4CAF50", "#FF9800", "#29B6F6", "#9C27B0", "#E91E63", "#2196F3" };
+        return colors[farmerId % colors.Length];
+    }
+
+    private string GetInitials(string firstName, string lastName)
+    {
+        if (string.IsNullOrEmpty(firstName) && string.IsNullOrEmpty(lastName)) return "??";
+
+        var firstInitial = !string.IsNullOrEmpty(firstName) ? firstName[0].ToString() : "";
+        var lastInitial = !string.IsNullOrEmpty(lastName) ? lastName[0].ToString() : "";
+
+        return $"{firstInitial}{lastInitial}".ToUpper();
+    }
+
+    private string GetCategoryColor(string category)
+    {
+        return category?.ToLower() switch
+        {
+            "organic" => "#4CAF50",
+            "dairy" => "#FF9800",
+            "grains" => "#2196F3",
+            "vegetables" => "#8BC34A",
+            _ => "#757575"
+        };
+    }
+}

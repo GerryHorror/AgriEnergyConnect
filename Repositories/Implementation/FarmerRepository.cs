@@ -24,6 +24,7 @@ namespace AgriEnergyConnect.Repositories.Implementation
         {
             return await _context.Farmers
                 .Include(f => f.User) // Includes the related User entity for each Farmer.
+                .Include(f => f.Products) // Includes the Products collection for each Farmer.
                 .ToListAsync(); // Converts the result to a list asynchronously.
         }
 
