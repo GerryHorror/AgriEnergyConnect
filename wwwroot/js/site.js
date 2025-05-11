@@ -1,25 +1,27 @@
-﻿// This waits for the entire DOM to be ready before running anything
+﻿/* Global scripting for the app */
+
+// Ensure the DOM is fully loaded before executing any of this
 document.addEventListener('DOMContentLoaded', function () {
+
+    // Attach a single click listener to the body – useful for dynamic content like modal buttons
     document.body.addEventListener('click', function (e) {
         const editBtn = e.target.closest('[data-edit-product-id]');
         if (!editBtn) return;
 
-        e.preventDefault(); // Prevent any default action
+        e.preventDefault(); // Just in case it's inside a <form> or <a>
 
         const productId = editBtn.getAttribute('data-edit-product-id');
-        console.log('Attempting to edit product:', productId); // Debug log
+        console.log('Trying to edit product with ID:', productId);
 
-        // Clean up any existing modals first
+        // Before loading a new modal, clean up any that are already open
         const existingModals = document.querySelectorAll('.modal');
         existingModals.forEach(modal => {
             const bsModalInstance = bootstrap.Modal.getInstance(modal);
-            if (bsModalInstance) {
-                bsModalInstance.dispose();
-            }
-            modal.parentNode.removeChild(modal);
+            if (bsModalInstance) bsModalInstance.dispose();
+            modal.remove();
         });
 
-        // Fetch the modal
+        // Go fetch the modal HTML via AJAX (server returns partial view)
         fetch(`/Farmer/GetEditProductModal/${productId}`, {
             method: 'GET',
             headers: {
@@ -28,60 +30,44 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         })
             .then(response => {
-                console.log('Response status:', response.status); // Debug log
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
                 return response.text();
             })
             .then(html => {
-                console.log('HTML received, length:', html.length); // Debug log
-
-                // Create a temporary container
                 const tempDiv = document.createElement('div');
                 tempDiv.innerHTML = html;
 
-                // Get the modal element
-                const modalElement = tempDiv.querySelector('.modal');
-                if (!modalElement) {
-                    throw new Error('Modal element not found in response');
-                }
+                const modalEl = tempDiv.querySelector('.modal');
+                if (!modalEl) throw new Error('Modal element not found in server response');
 
-                // Append to body
-                document.body.appendChild(modalElement);
-
-                // Force browser to reflow
-                modalElement.offsetHeight;
-
-                // Initialize Bootstrap modal with explicit options
-                const options = {
+                // Add modal to DOM and trigger Bootstrap
+                document.body.appendChild(modalEl);
+                modalEl.offsetHeight; // trigger reflow
+                const bsModal = new bootstrap.Modal(modalEl, {
                     backdrop: true,
                     keyboard: true,
                     focus: true
-                };
-
-                const bsModal = new bootstrap.Modal(modalElement, options);
+                });
 
                 // Show modal
                 bsModal.show();
 
-                console.log('Modal should be visible now'); // Debug log
+                // Setup form logic
+                setupEditFormSubmit(modalEl, bsModal);
 
-                // Setup form submission
-                setupEditFormSubmit(modalElement, bsModal);
+                // Allow dragging the modal
+                makeModalDraggable(modalEl);
             })
             .catch(error => {
-                console.error('Error loading modal:', error);
-                alert('Failed to load edit form: ' + error.message);
+                console.error('Failed to load edit modal:', error);
+                alert(`Something went wrong while loading the edit form: ${error.message}`);
             });
     });
 
+    // Submits the edit form via AJAX inside the modal
     function setupEditFormSubmit(modalEl, bsModal) {
         const form = modalEl.querySelector('#editProductForm');
-        if (!form) {
-            console.error('Form not found in modal');
-            return;
-        }
+        if (!form) return console.error('Edit form not found inside modal');
 
         form.addEventListener('submit', function (e) {
             e.preventDefault();
@@ -95,28 +81,73 @@ document.addEventListener('DOMContentLoaded', function () {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Save failed');
-                    }
-                    return response.text();
+                .then(res => {
+                    if (!res.ok) throw new Error('Could not save changes');
+                    return res.text();
                 })
                 .then(() => {
                     bsModal.hide();
 
-                    // Cleanup after modal is hidden
-                    modalEl.addEventListener('hidden.bs.modal', function () {
+                    // Clean up modal from DOM
+                    modalEl.addEventListener('hidden.bs.modal', () => {
                         bsModal.dispose();
-                        modalEl.parentNode.removeChild(modalEl);
+                        modalEl.remove();
                     });
 
-                    alert('Product updated successfully.');
-                    window.location.reload();
+                    // Show success toast – nice and subtle
+                    showToast('✅ Product updated successfully!');
+
+                    // Refresh view (could also refresh partial if preferred)
+                    setTimeout(() => window.location.reload(), 800);
                 })
                 .catch(error => {
                     console.error('Error saving product:', error);
-                    alert('Error saving product: ' + error.message);
+                    alert('Update failed. Try again or contact support.');
                 });
+        });
+    }
+
+    // Displays a toast with a custom message
+    function showToast(message) {
+        const toastContainer = document.querySelector('.toast-container');
+        const toastEl = document.getElementById('productToast');
+        const toastBody = toastEl?.querySelector('.toast-body');
+
+        if (toastBody) toastBody.textContent = message;
+
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    }
+
+    // Enables dragging a Bootstrap modal by its header
+    function makeModalDraggable(modal) {
+        const header = modal.querySelector('.modal-header');
+        const dialog = modal.querySelector('.modal-dialog');
+        if (!header || !dialog) return;
+
+        let isDragging = false;
+        let offsetX = 0, offsetY = 0;
+
+        header.style.cursor = 'move';
+
+        header.addEventListener('mousedown', function (e) {
+            isDragging = true;
+            const rect = dialog.getBoundingClientRect();
+            offsetX = e.clientX - rect.left;
+            offsetY = e.clientY - rect.top;
+            dialog.style.position = 'fixed';
+            dialog.style.zIndex = '1055'; // Keep on top
+        });
+
+        document.addEventListener('mousemove', function (e) {
+            if (!isDragging) return;
+            dialog.style.top = `${e.clientY - offsetY}px`;
+            dialog.style.left = `${e.clientX - offsetX}px`;
+            dialog.style.margin = '0';
+        });
+
+        document.addEventListener('mouseup', function () {
+            isDragging = false;
         });
     }
 });
