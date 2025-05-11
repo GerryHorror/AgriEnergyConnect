@@ -22,7 +22,7 @@
         <div class="card">
             <div class="card-body">
                 <form method="get" asp-action="ManageFarmers" class="row g-3">
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="searchTerm" class="form-label">Search Farmers</label>
                         <div class="input-group">
                             <span class="input-group-text">
@@ -33,7 +33,7 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <label for="locationFilter" class="form-label">Location</label>
                         <div class="input-group">
                             <span class="input-group-text">
@@ -49,7 +49,21 @@
                         </div>
                     </div>
 
-                    <div class="col-md-4 d-flex align-items-end">
+                    <div class="col-md-3">
+                        <label for="statusFilter" class="form-label">Status</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="fa fa-filter"></i>
+                            </span>
+                            <select class="form-select" id="statusFilter" name="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="active" selected="@(ViewBag.SelectedStatus == "active")">Active Only</option>
+                                <option value="inactive" selected="@(ViewBag.SelectedStatus == "inactive")">Inactive Only</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 d-flex align-items-end">
                         <button type="submit" class="btn btn-primary me-2">
                             <i class="fa fa-filter me-2"></i> Filter
                         </button>
@@ -85,21 +99,28 @@
                         <tbody>
                             @foreach (var farmer in Model)
                             {
-                                <tr>
+                                <tr class="@(!farmer.IsActive ? "table-secondary opacity-75" : "")">
                                     <td class="align-middle">
                                         <div class="d-flex align-items-center">
                                             <div class="farmer-avatar me-3"
                                                  style="background-color: @GetAvatarColor(farmer.FarmerId);
                                                         color: @GetAvatarTextColor(farmer.FarmerId);
-                                                        border-color: @GetAvatarBorderColor(farmer.FarmerId);">
+                                                        border-color: @GetAvatarBorderColor(farmer.FarmerId);
+                                                        opacity: @(!farmer.IsActive ? "0.5" : "1");">
                                                 @GetInitials(farmer.OwnerName)
                                             </div>
-                                            <strong>@farmer.FarmName</strong>
+                                            <div>
+                                                <strong class="@(!farmer.IsActive ? "text-muted" : "")">@farmer.FarmName</strong>
+                                                @if (!farmer.IsActive)
+                                                {
+                                                    <span class="badge bg-secondary ms-2 small">Inactive</span>
+                                                }
+                                            </div>
                                         </div>
                                     </td>
-                                    <td class="align-middle">@farmer.OwnerName</td>
+                                    <td class="align-middle @(!farmer.IsActive ? "text-muted" : "")">@farmer.OwnerName</td>
                                     <td class="align-middle">
-                                        <span class="text-muted">
+                                        <span class="@(!farmer.IsActive ? "text-muted" : "")">
                                             <i class="fa fa-map-marker-alt me-1"></i>
                                             @farmer.Location
                                         </span>
@@ -131,6 +152,28 @@
                                                class="btn btn-sm btn-outline-warning" title="Edit">
                                                 <i class="fa fa-edit"></i>
                                             </a>
+                                            @if (farmer.IsActive)
+                                            {
+                                                <form asp-action="DeactivateFarmer" method="post" class="d-inline">
+                                                    <input type="hidden" name="farmerId" value="@farmer.FarmerId" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                            title="Deactivate"
+                                                            onclick="return confirm('Are you sure you want to deactivate @farmer.OwnerName? This will disable their access to the system.')">
+                                                        <i class="fa fa-ban"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <form asp-action="ReactivateFarmer" method="post" class="d-inline">
+                                                    <input type="hidden" name="farmerId" value="@farmer.FarmerId" />
+                                                    <button type="submit" class="btn btn-sm btn-outline-success"
+                                                            title="Reactivate"
+                                                            onclick="return confirm('Are you sure you want to reactivate @farmer.OwnerName? This will restore their access to the system.')">
+                                                        <i class="fa fa-check-circle"></i>
+                                                    </button>
+                                                </form>
+                                            }
                                         </div>
                                     </td>
                                 </tr>
@@ -161,7 +204,7 @@
         <nav aria-label="Page navigation" class="mt-4">
             <ul class="pagination justify-content-center">
                 <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
-                    <a class="page-link" href="@Url.Action("ManageFarmers", new { page = ViewBag.CurrentPage - 1, searchTerm = ViewBag.SearchTerm, locationFilter = ViewBag.SelectedLocation })">
+                    <a class="page-link" href="@Url.Action("ManageFarmers", new { page = ViewBag.CurrentPage - 1, searchTerm = ViewBag.SearchTerm, locationFilter = ViewBag.SelectedLocation, statusFilter = ViewBag.SelectedStatus })">
                         Previous
                     </a>
                 </li>
@@ -169,14 +212,14 @@
                 @for (int i = 1; i <= ViewBag.TotalPages; i++)
                 {
                     <li class="page-item @(ViewBag.CurrentPage == i ? "active" : "")">
-                        <a class="page-link" href="@Url.Action("ManageFarmers", new { page = i, searchTerm = ViewBag.SearchTerm, locationFilter = ViewBag.SelectedLocation })">
+                        <a class="page-link" href="@Url.Action("ManageFarmers", new { page = i, searchTerm = ViewBag.SearchTerm, locationFilter = ViewBag.SelectedLocation, statusFilter = ViewBag.SelectedStatus })">
                             @i
                         </a>
                     </li>
                 }
 
                 <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
-                    <a class="page-link" href="@Url.Action("ManageFarmers", new { page = ViewBag.CurrentPage + 1, searchTerm = ViewBag.SearchTerm, locationFilter = ViewBag.SelectedLocation })">
+                    <a class="page-link" href="@Url.Action("ManageFarmers", new { page = ViewBag.CurrentPage + 1, searchTerm = ViewBag.SearchTerm, locationFilter = ViewBag.SelectedLocation, statusFilter = ViewBag.SelectedStatus })">
                         Next
                     </a>
                 </li>
@@ -213,6 +256,15 @@
 
     .filter-section .card {
         border: 1px solid #e0e0e0;
+    }
+
+    /* Inactive farmer styling */
+    .table-secondary.opacity-75 {
+        opacity: 0.6;
+    }
+
+    .table > tbody > tr.table-secondary:hover {
+        background-color: rgba(108, 117, 125, 0.1);
     }
 </style>
 

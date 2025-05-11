@@ -328,7 +328,7 @@ namespace AgriEnergyConnect.Controllers
 
         // Displays a list of all farmers for management purposes.
         [HttpGet]
-        public async Task<IActionResult> ManageFarmers(string searchTerm = "", string locationFilter = "", int page = 1, int pageSize = 10)
+        public async Task<IActionResult> ManageFarmers(string searchTerm = "", string locationFilter = "", string statusFilter = "", int page = 1, int pageSize = 10)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var user = await _authService.GetUserByIdAsync(userId);
@@ -353,10 +353,23 @@ namespace AgriEnergyConnect.Controllers
                     ? $"{farmer.User.FirstName} {farmer.User.LastName}".Trim()
                     : "Unknown Farmer",
                 ProductCount = farmer.Products?.Count ?? 0,
-                IsActive = farmer.User?.IsActive ?? false // This is the fix for IsActive
+                IsActive = farmer.User?.IsActive ?? false
             }).ToList();
 
-            // Apply filters
+            // Apply status filter
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                if (statusFilter == "active")
+                {
+                    farmerSummaries = farmerSummaries.Where(f => f.IsActive).ToList();
+                }
+                else if (statusFilter == "inactive")
+                {
+                    farmerSummaries = farmerSummaries.Where(f => !f.IsActive).ToList();
+                }
+            }
+
+            // Apply other filters
             if (!string.IsNullOrEmpty(searchTerm))
             {
                 farmerSummaries = farmerSummaries.Where(f =>
@@ -390,6 +403,7 @@ namespace AgriEnergyConnect.Controllers
             // Set ViewBag data for the view
             ViewBag.SearchTerm = searchTerm;
             ViewBag.SelectedLocation = locationFilter;
+            ViewBag.SelectedStatus = statusFilter;
             ViewBag.UniqueLocations = uniqueLocations;
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
@@ -472,6 +486,58 @@ namespace AgriEnergyConnect.Controllers
                 ModelState.AddModelError(string.Empty, $"An error occurred while updating the farmer: {ex.Message}");
                 ViewBag.FarmerId = farmerId;
                 return View(model);
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeactivateFarmer(int farmerId)
+        {
+            try
+            {
+                var farmer = await _farmerService.GetFarmerByIdAsync(farmerId);
+                if (farmer == null)
+                    return NotFound();
+
+                // Deactivate the associated user
+                farmer.User.IsActive = false;
+
+                // Update the farmer record
+                await _farmerService.UpdateFarmerAsync(farmer);
+
+                TempData["SuccessMessage"] = $"Farmer {farmer.User.FirstName} {farmer.User.LastName} has been deactivated.";
+                return RedirectToAction(nameof(ManageFarmers));
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error deactivating farmer: {ex.Message}";
+                return RedirectToAction(nameof(ManageFarmers));
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReactivateFarmer(int farmerId)
+        {
+            try
+            {
+                var farmer = await _farmerService.GetFarmerByIdAsync(farmerId);
+                if (farmer == null)
+                    return NotFound();
+
+                // Reactivate the associated user
+                farmer.User.IsActive = true;
+
+                // Update the farmer record
+                await _farmerService.UpdateFarmerAsync(farmer);
+
+                TempData["SuccessMessage"] = $"Farmer {farmer.User.FirstName} {farmer.User.LastName} has been reactivated.";
+                return RedirectToAction(nameof(ManageFarmers));
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error reactivating farmer: {ex.Message}";
+                return RedirectToAction(nameof(ManageFarmers));
             }
         }
     }
