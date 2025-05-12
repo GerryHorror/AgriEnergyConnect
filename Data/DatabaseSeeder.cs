@@ -77,7 +77,8 @@ namespace AgriEnergyConnect.Data
                     Description = "Non-GMO certified",
                     ProductionDate = fiveDaysAgo,
                     FarmerId = farmer.FarmerId,
-                    CreatedDate = now
+                    CreatedDate = now,
+                    IsActive = true
                 },
                 new Product
                 {
@@ -86,7 +87,8 @@ namespace AgriEnergyConnect.Data
                     Description = "Large, brown eggs",
                     ProductionDate = eightDaysAgo,
                     FarmerId = farmer.FarmerId,
-                    CreatedDate = now
+                    CreatedDate = now,
+                    IsActive = true
                 },
                 new Product
                 {
@@ -95,7 +97,8 @@ namespace AgriEnergyConnect.Data
                     Description = "Unpasteurised",
                     ProductionDate = sevenDaysAgo,
                     FarmerId = farmer.FarmerId,
-                    CreatedDate = now
+                    CreatedDate = now,
+                    IsActive = true
                 },
                 new Product
                 {
@@ -104,7 +107,8 @@ namespace AgriEnergyConnect.Data
                     Description = "Organic, freshly harvested",
                     ProductionDate = fifteenDaysAgo,
                     FarmerId = farmer.FarmerId,
-                    CreatedDate = now
+                    CreatedDate = now,
+                    IsActive = true
                 }
             };
             context.Products.AddRange(products);

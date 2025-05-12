@@ -47,5 +47,7 @@ namespace AgriEnergyConnect.Models
         // The date and time when the product was created in the system.
         // Defaults to the current date and time when a new product is added.
         public DateTime CreatedDate { get; set; } = DateTime.Now;
+
+        public bool IsActive { get; set; } = true; // Sets the default status of the product to active.
     }
 }

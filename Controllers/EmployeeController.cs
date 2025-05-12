@@ -295,15 +295,172 @@ namespace AgriEnergyConnect.Controllers
             return View(farmerDTO);
         }
 
+        [HttpGet]
+        [Route("Employee/ViewFarmerProducts/{farmerId}")]
+        public async Task<IActionResult> ViewFarmerProducts(int farmerId, string searchTerm = "", string category = "", string statusFilter = "", DateTime? startDate = null, DateTime? endDate = null)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var user = await _authService.GetUserByIdAsync(userId);
+
+            if (user == null)
+                return NotFound();
+
+            // Set ViewBag employee data
+            ViewBag.Employee = new { User = user };
+
+            // Get the farmer to display farmer information
+            var farmer = await _farmerService.GetFarmerByIdAsync(farmerId);
+            if (farmer == null)
+                return NotFound();
+
+            ViewBag.Farmer = farmer;
+
+            // Create filter DTO
+            var filter = new ProductFilterDTO
+            {
+                FarmerId = farmerId,
+                SearchTerm = searchTerm,
+                Category = category,
+                StartDate = startDate,
+                EndDate = endDate
+            };
+
+            // Apply active status filter if provided
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                if (statusFilter == "active")
+                {
+                    filter.ActiveOnly = true;
+                }
+                else if (statusFilter == "inactive")
+                {
+                    filter.ActiveOnly = false;
+                }
+                // If statusFilter is empty or "all", don't set ActiveOnly (show all)
+            }
+
+            // Get products with filter
+            var products = await _productService.GetFilteredProductDTOsAsync(filter);
+
+            // Get all available categories for this farmer's products
+            var allCategories = products
+                .Select(p => p.Category)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
+
+            ViewBag.Categories = allCategories;
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.SelectedCategory = category;
+            ViewBag.SelectedStatus = statusFilter;
+            ViewBag.StartDate = startDate;
+            ViewBag.EndDate = endDate;
+
+            return View(products);
+        }
+
+        [HttpGet]
+        [Route("Employee/Products")]
+        public async Task<IActionResult> Products(string searchTerm = "", string category = "", string farmerFilter = "", string statusFilter = "", DateTime? startDate = null, DateTime? endDate = null, int page = 1, int pageSize = 10)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var user = await _authService.GetUserByIdAsync(userId);
+
+            if (user == null)
+                return NotFound();
+
+            // Set ViewBag employee data
+            ViewBag.Employee = new { User = user };
+
+            // Get all farmers for the dropdown filter
+            var farmers = await _farmerService.GetAllFarmerSummariesAsync();
+
+            // Create filter DTO (without farmerId to get all products)
+            var filter = new ProductFilterDTO
+            {
+                SearchTerm = searchTerm,
+                Category = category,
+                StartDate = startDate,
+                EndDate = endDate
+            };
+
+            // Apply farmer filter if provided
+            int? farmerIdFilter = null;
+            if (!string.IsNullOrEmpty(farmerFilter) && int.TryParse(farmerFilter, out int parsedId))
+            {
+                farmerIdFilter = parsedId;
+                filter.FarmerId = farmerIdFilter;
+            }
+
+            // Apply active status filter if provided
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                if (statusFilter == "active")
+                {
+                    filter.ActiveOnly = true;
+                }
+                else if (statusFilter == "inactive")
+                {
+                    filter.ActiveOnly = false;
+                }
+                // If statusFilter is empty or "all", don't set ActiveOnly (show all)
+            }
+
+            // Get products with filter
+            var allProducts = await _productService.GetFilteredProductDTOsAsync(filter);
+
+            // Get available categories for all products
+            var allCategories = await _productService.GetAllCategoriesAsync();
+
+            // Apply pagination
+            var totalProducts = allProducts.Count();
+            var totalPages = (int)Math.Ceiling(totalProducts / (double)pageSize);
+            var paginatedProducts = allProducts
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            // Pass all necessary data to the view
+            ViewBag.Farmers = farmers;
+            ViewBag.Categories = allCategories;
+            ViewBag.SearchTerm = searchTerm;
+            ViewBag.SelectedCategory = category;
+            ViewBag.SelectedFarmer = farmerFilter;
+            ViewBag.SelectedStatus = statusFilter;
+            ViewBag.StartDate = startDate;
+            ViewBag.EndDate = endDate;
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalProducts = totalProducts;
+
+            return View(paginatedProducts);
+        }
+
         // Displays detailed information about a specific product.
         // Parameters:
         //   productId - The ID of the product whose details are to be displayed.
         [HttpGet]
+        [Route("Employee/ProductDetails/{productId}")]
         public async Task<IActionResult> ProductDetails(int productId)
         {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var user = await _authService.GetUserByIdAsync(userId);
+
+            if (user == null)
+                return NotFound();
+
+            // Set ViewBag employee data
+            ViewBag.Employee = new { User = user };
+
             var productDTO = await _productService.GetProductDTOByIdAsync(productId);
             if (productDTO == null)
                 return NotFound();
+
+            // Get the farmer to show navigation breadcrumbs
+            var farmer = await _farmerService.GetFarmerByIdAsync(productDTO.FarmerId);
+            ViewBag.Farmer = farmer;
+
             return View(productDTO);
         }
 
@@ -538,6 +695,84 @@ namespace AgriEnergyConnect.Controllers
             {
                 TempData["ErrorMessage"] = $"Error reactivating farmer: {ex.Message}";
                 return RedirectToAction(nameof(ManageFarmers));
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("Employee/DeactivateProduct/{productId}")]
+        public async Task<IActionResult> DeactivateProduct(int productId, string returnUrl = null)
+        {
+            try
+            {
+                var product = await _productService.GetProductByIdAsync(productId);
+                if (product == null)
+                    return NotFound();
+
+                // Deactivate the product
+                product.IsActive = false;
+
+                // Update the product
+                await _productService.UpdateProductAsync(product);
+
+                TempData["SuccessMessage"] = $"Product '{product.Name}' has been marked as inactive/out of stock.";
+
+                // Redirect back to the referring page if specified
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+
+                // Default redirect to products page
+                return RedirectToAction(nameof(Products));
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error deactivating product: {ex.Message}";
+
+                // Redirect back to the referring page if specified
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+
+                // Default redirect to products page
+                return RedirectToAction(nameof(Products));
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("Employee/ActivateProduct/{productId}")]
+        public async Task<IActionResult> ActivateProduct(int productId, string returnUrl = null)
+        {
+            try
+            {
+                var product = await _productService.GetProductByIdAsync(productId);
+                if (product == null)
+                    return NotFound();
+
+                // Activate the product
+                product.IsActive = true;
+
+                // Update the product
+                await _productService.UpdateProductAsync(product);
+
+                TempData["SuccessMessage"] = $"Product '{product.Name}' has been marked as active/in stock.";
+
+                // Redirect back to the referring page if specified
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+
+                // Default redirect to products page
+                return RedirectToAction(nameof(Products));
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error activating product: {ex.Message}";
+
+                // Redirect back to the referring page if specified
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+
+                // Default redirect to products page
+                return RedirectToAction(nameof(Products));
             }
         }
     }

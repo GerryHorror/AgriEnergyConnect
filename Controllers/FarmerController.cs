@@ -289,7 +289,8 @@ namespace AgriEnergyConnect.Controllers
                     ProductionDate = model.ProductionDate,
                     Description = model.Description,
                     FarmerId = farmer.FarmerId,
-                    CreatedDate = DateTime.Now
+                    CreatedDate = DateTime.Now,
+                    IsActive = true // Set the default status to active
                 };
 
                 await _productService.AddProductAsync(product);

@@ -8,81 +8,89 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/css/employee-dashboard.css" />
-    <link rel="stylesheet" href="~/css/employee-addfarmer.css" />
-	<link rel="stylesheet" href="~/css/employee-managefarmers.css" />
+    @RenderSection("Styles", required: false)
 </head>
 <body class="employee-body">
+    <!-- Top header bar with the green border styling -->
+    <header class="employee-header">
+        <div class="header-container">
+            <div class="logo">
+                <svg width="36" height="32" viewBox="0 0 36 32">
+                    <path d="M5,10 Q12,5 18,10 T31,10" stroke="#FFFFFF" stroke-width="2" fill="none" />
+                    <path d="M0,16 Q9,8 18,16 T36,16" stroke="#FFFFFF" stroke-width="2" fill="none" />
+                    <path d="M5,22 Q12,17 18,22 T31,22" stroke="#FFFFFF" stroke-width="2" fill="none" />
+                </svg>
+                <div class="app-name">Agri-Energy Connect</div>
+            </div>
+        </div>
+    </header>
+
     <!-- Sidebar -->
     <aside class="employee-sidebar">
         <div class="profile-section">
             <div class="admin-avatar">
-                @(ViewBag.Employee.User.FirstName[0].ToString() + ViewBag.Employee.User.LastName[0].ToString())
+                @if (ViewBag.Employee != null && ViewBag.Employee.User != null)
+                {
+                    @(ViewBag.Employee.User.FirstName[0].ToString() + ViewBag.Employee.User.LastName[0].ToString())
+                }
+                else
+                {
+                    <span>EM</span>
+                }
             </div>
-            <div class="admin-name">@ViewBag.Employee.User.FirstName @ViewBag.Employee.User.LastName</div>
-            <div class="admin-role">System Admin</div>
+            <div class="admin-name">
+                @if (ViewBag.Employee != null && ViewBag.Employee.User != null)
+                {
+                    @(ViewBag.Employee.User.FirstName + " " + ViewBag.Employee.User.LastName)
+                }
+                else
+                {
+                    <span>Employee Admin</span>
+                }
+            </div>
+            <div class="admin-role">System Administrator</div>
         </div>
 
         <nav class="sidebar-nav">
             <ul>
                 <li>
-                    <a asp-controller="Employee" asp-action="Dashboard"
-                       class="nav-link @(IsActive("Employee", "Dashboard"))">
-                        <span class="nav-icon">⬤</span>
-                        Dashboard
+                    <a href="@Url.Action("Dashboard", "Employee")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")">
+                        <span class="nav-icon"><i class="fa fa-tachometer-alt"></i></span> Dashboard
                     </a>
                 </li>
                 <li>
-                    <a asp-controller="Employee" asp-action="ManageFarmers"
-                       class="nav-link @(IsActive("Employee", "ManageFarmers"))">
-                        <span class="nav-icon">○</span>
-                        Farmers
+                    <a href="@Url.Action("ManageFarmers", "Employee")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "ManageFarmers" || ViewContext.RouteData.Values["Action"].ToString() == "FarmerDetails" || ViewContext.RouteData.Values["Action"].ToString() == "EditFarmer" ? "active" : "")">
+                        <span class="nav-icon"><i class="fa fa-users"></i></span> Farmers
                     </a>
                 </li>
                 <li>
-                    <a asp-controller="Employee" asp-action="AddFarmer"
-                       class="nav-link @(IsActive("Employee", "AddFarmer"))">
-                        <span class="nav-icon">＋</span>
-                        Add Farmer
+                    <a href="@Url.Action("AddFarmer", "Employee")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "AddFarmer" ? "active" : "")">
+                        <span class="nav-icon"><i class="fa fa-user-plus"></i></span> Add Farmer
                     </a>
                 </li>
                 <li>
-                    <a asp-controller="Employee" asp-action="SearchProducts"
-                       class="nav-link @(IsActive("Employee", "SearchProducts"))">
-                        <span class="nav-icon">◈</span>
-                        Products
+                    <a href="@Url.Action("Products", "Employee")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Products" || ViewContext.RouteData.Values["Action"].ToString() == "ViewFarmerProducts" || ViewContext.RouteData.Values["Action"].ToString() == "ProductDetails" ? "active" : "")">
+                        <span class="nav-icon"><i class="fa fa-box"></i></span> Products
                     </a>
                 </li>
                 <li>
-                    <a asp-controller="Employee" asp-action="Reports"
-                       class="nav-link @(IsActive("Employee", "Reports"))">
-                        <span class="nav-icon">◉</span>
-                        Reports
+                    <a href="#" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Messages" ? "active" : "")">
+                        <span class="nav-icon"><i class="fa fa-envelope"></i></span> Messages
                     </a>
                 </li>
-                <li style="margin-top: 200px;">
-                    <a asp-controller="Account" asp-action="Logout"
-                       class="nav-link">
-                        <span class="nav-icon">⇥</span>
-                        Logout
+                <li>
+                    <a href="#" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Reports" ? "active" : "")">
+                        <span class="nav-icon"><i class="fa fa-chart-bar"></i></span> Reports
+                    </a>
+                </li>
+                <li>
+                    <a href="#" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Settings" ? "active" : "")">
+                        <span class="nav-icon"><i class="fa fa-cog"></i></span> Settings
                     </a>
                 </li>
             </ul>
         </nav>
     </aside>
-
-    <!-- Header -->
-    <header class="employee-header">
-        <div class="header-container">
-            <div class="logo">
-                <svg width="40" height="30" viewBox="0 0 40 30">
-                    <path d="M5,10 Q12.5,0 20,10 T35,10" stroke="white" stroke-width="2" fill="none" />
-                    <path d="M0,15 Q10,0 20,15 T40,15" stroke="white" stroke-width="2" fill="none" />
-                    <path d="M5,20 Q12.5,10 20,20 T35,20" stroke="white" stroke-width="2" fill="none" />
-                </svg>
-                <span class="app-name">Agri-Energy Connect</span>
-            </div>
-        </div>
-    </header>
 
     <!-- Main Content -->
     <main class="main-content">
@@ -91,15 +99,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js"></script>
-    @await RenderSectionAsync("Scripts", required: false)
-    @functions {
-        private string IsActive(string controller, string action)
-        {
-            var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
-            var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
-            return (currentController == controller && currentAction == action) ? "active" : "";
-        }
-    }
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @RenderSection("Scripts", required: false)
 </body>
 </html>

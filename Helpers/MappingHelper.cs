@@ -101,7 +101,8 @@ namespace AgriEnergyConnect.Helpers
                 FarmerId = product.FarmerId,
                 FarmerName = $"{product.Farmer?.User?.FirstName} {product.Farmer?.User?.LastName}",
                 FarmName = product.Farmer?.FarmName,
-                CreatedDate = product.CreatedDate
+                CreatedDate = product.CreatedDate,
+                IsActive = product.IsActive
             };
         }
 
@@ -119,7 +120,8 @@ namespace AgriEnergyConnect.Helpers
                 ProductId = product.ProductId,
                 Name = product.Name,
                 Category = product.Category,
-                ProductionDate = product.ProductionDate
+                ProductionDate = product.ProductionDate,
+                IsActive = product.IsActive
             };
         }
 
