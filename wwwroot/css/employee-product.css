@@ -1,0 +1,406 @@
+﻿/* Employee Products Management Styles */
+
+/* Product List Page */
+.product-list-container {
+    padding: 20px;
+}
+
+.product-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.product-search-bar {
+    max-width: 400px;
+    margin-bottom: 20px;
+}
+
+/* Filter Section */
+.products-filter-section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 20px;
+    align-items: end;
+}
+
+.filter-inputs {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+/* Product Table */
+.products-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+    .products-table th {
+        background: #f8f9fa;
+        padding: 12px 15px;
+        text-align: left;
+        font-weight: 600;
+        color: #555;
+        border-bottom: 2px solid #e0e0e0;
+    }
+
+    .products-table td {
+        padding: 12px 15px;
+        border-bottom: 1px solid #eee;
+    }
+
+/* Product Category Badges */
+.product-category-badge {
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.category-organic {
+    background: #E8F5E9;
+    color: #4CAF50;
+}
+
+.category-dairy {
+    background: #FFF3E0;
+    color: #FF9800;
+}
+
+.category-grains {
+    background: #E1F5FE;
+    color: #2196F3;
+}
+
+.category-vegetables {
+    background: #F1F8E9;
+    color: #8BC34A;
+}
+
+/* Product Detail Page */
+.product-detail-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.product-detail-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.product-detail-subtitle {
+    color: #666;
+    font-size: 16px;
+}
+
+.product-detail-card {
+    background: white;
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    height: 100%;
+}
+
+.product-detail-image {
+    width: 100%;
+    height: 250px;
+    border-radius: 8px;
+    object-fit: cover;
+    background-color: #f5f5f5;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: #ccc;
+}
+
+.product-detail-item {
+    margin-bottom: 20px;
+}
+
+.detail-label {
+    display: block;
+    color: #888;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.detail-value {
+    font-weight: 500;
+    color: #333;
+    line-height: 1.5;
+}
+
+/* Farmer Info Card */
+.farmer-info-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.farmer-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: bold;
+}
+
+.farmer-name {
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.farmer-farm {
+    font-size: 14px;
+    color: #666;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.contact-icon {
+    width: 30px;
+    height: 30px;
+    background: #f5f5f5;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.contact-text {
+    font-size: 14px;
+}
+
+/* Actions Card */
+.actions-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.action-button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    text-align: center;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.action-button-primary {
+    background: #e0f2f1;
+    color: #00897B;
+    border: 1px solid #00897B;
+}
+
+    .action-button-primary:hover {
+        background: #00897B;
+        color: white;
+    }
+
+.action-button-secondary {
+    background: #f5f5f5;
+    color: #555;
+    border: 1px solid #ddd;
+}
+
+    .action-button-secondary:hover {
+        background: #eeeeee;
+        border-color: #bbb;
+    }
+
+/* Timeline */
+.timeline {
+    position: relative;
+    padding-left: 30px;
+    margin-top: 30px;
+}
+
+    .timeline::before {
+        content: "";
+        position: absolute;
+        left: 9px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #eee;
+    }
+
+.timeline-item {
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -30px;
+    top: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.timeline-content {
+    padding-bottom: 10px;
+}
+
+.timeline-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.timeline-text {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 0;
+}
+
+/* Empty State */
+.products-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 8px;
+    margin-top: 30px;
+}
+
+.empty-state-icon {
+    font-size: 48px;
+    color: #ccc;
+    margin-bottom: 15px;
+}
+
+.empty-state-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.empty-state-text {
+    color: #888;
+    margin-bottom: 20px;
+}
+
+/* Product Category Badges */
+.product-category-badge {
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.category-organic {
+    background-color: #E8F5E9;
+    color: #4CAF50;
+}
+
+.category-dairy {
+    background-color: #FFF3E0;
+    color: #FF9800;
+}
+
+.category-grains {
+    background-color: #E1F5FE;
+    color: #2196F3;
+}
+
+.category-vegetables {
+    background-color: #F1F8E9;
+    color: #8BC34A;
+}
+
+/* Print Styles */
+@media print {
+    .page-header,
+    .filter-section,
+    .actions-card,
+    .btn,
+    .action-button {
+        display: none;
+    }
+
+    .farmer-info-card {
+        page-break-inside: avoid;
+    }
+
+    .product-detail-card {
+        box-shadow: none;
+        border: 1px solid #eee;
+    }
+
+    body {
+        background: white;
+    }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    .filter-inputs {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .product-list-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .product-search-bar {
+        width: 100%;
+        max-width: none;
+    }
+
+    .filter-inputs {
+        grid-template-columns: 1fr;
+    }
+
+    .product-detail-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .products-table th:nth-child(4),
+    .products-table td:nth-child(4) {
+        display: none;
+    }
+}
