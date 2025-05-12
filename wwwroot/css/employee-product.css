@@ -62,29 +62,29 @@
 
 /* Product Category Badges */
 .product-category-badge {
-    padding: 3px 10px;
+    padding: 5px 10px;
     border-radius: 12px;
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 600;
 }
 
 .category-organic {
-    background: #E8F5E9;
+    background-color: #E8F5E9;
     color: #4CAF50;
 }
 
 .category-dairy {
-    background: #FFF3E0;
+    background-color: #FFF3E0;
     color: #FF9800;
 }
 
 .category-grains {
-    background: #E1F5FE;
+    background-color: #E1F5FE;
     color: #2196F3;
 }
 
 .category-vegetables {
-    background: #F1F8E9;
+    background-color: #F1F8E9;
     color: #8BC34A;
 }
 
@@ -320,32 +320,31 @@
     margin-bottom: 20px;
 }
 
-/* Product Category Badges */
-.product-category-badge {
-    padding: 5px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
+/* Product Status */
+.table-secondary.opacity-75 {
+    opacity: 0.6;
 }
 
-.category-organic {
-    background-color: #E8F5E9;
-    color: #4CAF50;
+.table > tbody > tr.table-secondary:hover {
+    background-color: rgba(108, 117, 125, 0.1);
 }
 
-.category-dairy {
-    background-color: #FFF3E0;
-    color: #FF9800;
+.status-badge {
+    font-size: 0.85rem;
+    padding: 0.35em 0.65em;
+    border-radius: 0.25rem;
 }
 
-.category-grains {
-    background-color: #E1F5FE;
-    color: #2196F3;
+.status-in-stock {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border: 1px solid #a3cfbb;
 }
 
-.category-vegetables {
-    background-color: #F1F8E9;
-    color: #8BC34A;
+.status-out-of-stock {
+    background-color: #f8d7da;
+    color: #842029;
+    border: 1px solid #f5c2c7;
 }
 
 /* Print Styles */

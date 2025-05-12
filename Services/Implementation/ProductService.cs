@@ -130,6 +130,12 @@ namespace AgriEnergyConnect.Services.Implementation
                     p.Category.ToLower().Contains(searchTerm));
             }
 
+            // Apply active/inactive filter
+            if (filter.ActiveOnly.HasValue)
+            {
+                products = products.Where(p => p.IsActive == filter.ActiveOnly.Value);
+            }
+
             // Convert to DTOs.
             return MappingHelper.ToProductDTOList(products);
         }

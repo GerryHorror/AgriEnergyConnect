@@ -34,6 +34,9 @@
 
         // The date and time when the product was created in the system.
         public DateTime CreatedDate { get; set; }
+
+        // Product status
+        public bool IsActive { get; set; }
     }
 
     // The ProductSummaryDTO class is a lightweight Data Transfer Object (DTO) used to transfer
@@ -51,6 +54,9 @@
 
         // The date when the product was produced.
         public DateTime ProductionDate { get; set; }
+
+        // The status of the product (e.g., "Active", "Inactive").
+        public bool IsActive { get; set; }
     }
 
     // The ProductFilterDTO class is a Data Transfer Object (DTO) used to encapsulate filtering criteria
@@ -76,5 +82,9 @@
         // A search term to filter products by name or description.
         // Optional: If null or empty, no search filter is applied.
         public string SearchTerm { get; set; }
+
+        // A flag indicating whether to include only active products in the results.
+        // Optional: If null, both active and inactive products are included.
+        public bool? ActiveOnly { get; set; }
     }
 }

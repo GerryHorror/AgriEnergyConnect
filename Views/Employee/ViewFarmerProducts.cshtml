@@ -7,7 +7,7 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/css/employee-products.css" />
+    <link rel="stylesheet" href="~/css/employee-product.css" />
 }
 
 <div class="dashboard-content">
@@ -115,6 +115,21 @@
                     </div>
                 </div>
 
+                <!-- Status Filter -->
+                <div class="col-md-3">
+                    <label for="statusFilter" class="form-label">Status</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fa fa-toggle-on"></i>
+                        </span>
+                        <select class="form-select" id="statusFilter" name="statusFilter">
+                            <option value="">All Products</option>
+                            <option value="active" selected="@(ViewBag.SelectedStatus == "active")">In Stock</option>
+                            <option value="inactive" selected="@(ViewBag.SelectedStatus == "inactive")">Out of Stock</option>
+                        </select>
+                    </div>
+                </div>
+
                 <!-- Date Range -->
                 <div class="col-md-3">
                     <label for="startDate" class="form-label">From Date</label>
@@ -173,6 +188,7 @@
                                 <th>Product Name</th>
                                 <th>Category</th>
                                 <th>Production Date</th>
+                                <th>Status</th>
                                 <th>Description</th>
                                 <th>Actions</th>
                             </tr>
@@ -180,7 +196,7 @@
                         <tbody>
                             @foreach (var product in Model)
                             {
-                                <tr>
+                                <tr class="@(!product.IsActive ? "table-secondary opacity-75" : "")">
                                     <td>
                                         <strong>@product.Name</strong>
                                     </td>
@@ -190,12 +206,44 @@
                                         </span>
                                     </td>
                                     <td>@product.ProductionDate.ToString("yyyy-MM-dd")</td>
+                                    <td>
+                                        @if (product.IsActive)
+                                        {
+                                            <span class="badge bg-success">In Stock</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">Out of Stock</span>
+                                        }
+                                    </td>
                                     <td>@(string.IsNullOrEmpty(product.Description) ? "-" : product.Description)</td>
                                     <td>
-                                        <a href="@Url.Action("ProductDetails", new { productId = product.ProductId })"
-                                           class="btn btn-sm btn-outline-info" title="View Details">
-                                            <i class="fa fa-eye"></i>
-                                        </a>
+                                        <div class="btn-group" role="group">
+                                            <a href="@Url.Action("ProductDetails", new { productId = product.ProductId })"
+                                               class="btn btn-sm btn-outline-info" title="View Details">
+                                                <i class="fa fa-eye"></i>
+                                            </a>
+                                            @if (product.IsActive)
+                                            {
+                                                <form asp-action="DeactivateProduct" asp-route-productId="@product.ProductId" asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Mark as Out of Stock"
+                                                            onclick="return confirm('Are you sure you want to mark @product.Name as out of stock?');">
+                                                        <i class="fa fa-minus-circle"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                            else
+                                            {
+                                                <form asp-action="ActivateProduct" asp-route-productId="@product.ProductId" asp-route-returnUrl="@Context.Request.Path@Context.Request.QueryString" method="post" class="d-inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Mark as In Stock"
+                                                            onclick="return confirm('Are you sure you want to mark @product.Name as in stock?');">
+                                                        <i class="fa fa-check-circle"></i>
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
                                     </td>
                                 </tr>
                             }
@@ -210,7 +258,7 @@
                         <i class="fa fa-box-open fa-3x text-muted mb-3"></i>
                         <h5 class="text-muted">No products found</h5>
                         <p class="text-muted">
-                            @if (!string.IsNullOrEmpty(ViewBag.SearchTerm) || !string.IsNullOrEmpty(ViewBag.SelectedCategory) || ViewBag.StartDate != null || ViewBag.EndDate != null)
+                            @if (!string.IsNullOrEmpty(ViewBag.SearchTerm) || !string.IsNullOrEmpty(ViewBag.SelectedCategory) || ViewBag.StartDate != null || ViewBag.EndDate != null || !string.IsNullOrEmpty(ViewBag.SelectedStatus))
                             {
                                 <span>Try adjusting your filter criteria.</span>
                             }
@@ -228,48 +276,6 @@
         </div>
     </div>
 </div>
-
-<!-- Styles -->
-<style>
-    .farmer-avatar-medium {
-        width: 70px;
-        height: 70px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 24px;
-        font-weight: bold;
-        border: 2px solid;
-    }
-
-    .product-category-badge {
-        padding: 5px 10px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .category-organic {
-        background: #E8F5E9;
-        color: #4CAF50;
-    }
-
-    .category-dairy {
-        background: #FFF3E0;
-        color: #FF9800;
-    }
-
-    .category-grains {
-        background: #E1F5FE;
-        color: #2196F3;
-    }
-
-    .category-vegetables {
-        background: #F1F8E9;
-        color: #8BC34A;
-    }
-</style>
 
 <!-- Print/Export Scripts -->
 <script>
@@ -293,7 +299,7 @@
             headerCells.forEach(cell => {
                 // Skip the Actions column
                 if (cell.textContent.trim() !== 'Actions') {
-                    headers.push(cell.textContent.trim());
+                    headers.push('"' + cell.textContent.trim() + '"');
                 }
             });
             csvContent += headers.join(',') + '\r\n';
@@ -318,7 +324,7 @@
                         }
 
                         // Escape commas
-                        cellText = cellText.replace(/,/g, ' ');
+                        cellText = '"' + cellText.replace(/"/g, '""') + '"';
                         rowData.push(cellText);
                     }
                 });

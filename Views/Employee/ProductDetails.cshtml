@@ -18,7 +18,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="@Url.Action("Dashboard")">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="@Url.Action("ManageFarmers")">Manage Farmers</a></li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Products")">Products</a></li>
                     <li class="breadcrumb-item">
                         <a href="@Url.Action("FarmerDetails", new { farmerId = Model.FarmerId })">
                             @Model.FarmName
@@ -81,7 +81,26 @@
                     </div>
 
                     <div class="row mb-4">
-                        <div class="col-md-12">
+                        <div class="col-md-6">
+                            <div class="product-detail-item">
+                                <span class="detail-label">Status</span>
+                                <span class="detail-value">
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="status-badge status-in-stock">
+                                            <i class="fa fa-check-circle me-1"></i> In Stock
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="status-badge status-out-of-stock">
+                                            <i class="fa fa-times-circle me-1"></i> Out of Stock
+                                        </span>
+                                    }
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
                             <div class="product-detail-item">
                                 <span class="detail-label">Description</span>
                                 <span class="detail-value">
@@ -117,10 +136,10 @@
                                 </div>
                             </div>
                             <div class="timeline-item">
-                                <div class="timeline-marker bg-primary"></div>
+                                <div class="timeline-marker @(Model.IsActive ? "bg-success" : "bg-secondary")"></div>
                                 <div class="timeline-content">
                                     <h6 class="timeline-title">Current Status</h6>
-                                    <p class="timeline-text">Active in Inventory</p>
+                                    <p class="timeline-text">@(Model.IsActive ? "In Stock" : "Out of Stock")</p>
                                 </div>
                             </div>
                         </div>
@@ -201,150 +220,34 @@
                         <a href="mailto:@(farmer.User?.Email)?subject=Regarding Product: @Model.Name" class="btn btn-outline-secondary">
                             <i class="fa fa-envelope me-2"></i> Contact Farmer
                         </a>
+                        @if (Model.IsActive)
+                        {
+                            <form asp-action="DeactivateProduct" asp-controller="Employee" asp-route-productId="@Model.ProductId"
+                                  asp-route-returnUrl="@Context.Request.Path" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-danger"
+                                        onclick="return confirm('Are you sure you want to mark this product as out of stock?');">
+                                    <i class="fa fa-minus-circle me-2"></i> Mark as Out of Stock
+                                </button>
+                            </form>
+                        }
+                        else
+                        {
+                            <form asp-action="ActivateProduct" asp-controller="Employee" asp-route-productId="@Model.ProductId"
+                                  asp-route-returnUrl="@Context.Request.Path" method="post">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-success"
+                                        onclick="return confirm('Are you sure you want to mark this product as in stock?');">
+                                    <i class="fa fa-check-circle me-2"></i> Mark as In Stock
+                                </button>
+                            </form>
+                        }
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Custom Styles -->
-<style>
-    .farmer-avatar {
-        width: 80px;
-        height: 80px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 28px;
-        font-weight: bold;
-        border: 2px solid;
-    }
-
-    .product-detail-item {
-        margin-bottom: 15px;
-    }
-
-    .detail-label {
-        display: block;
-        color: #666;
-        font-size: 12px;
-        text-transform: uppercase;
-        margin-bottom: 5px;
-    }
-
-    .detail-value {
-        font-size: 16px;
-        font-weight: 500;
-    }
-
-    .contact-item {
-        display: flex;
-        align-items: center;
-        margin-bottom: 12px;
-        font-size: 14px;
-    }
-
-        .contact-item a {
-            text-decoration: none;
-        }
-
-    .product-category-badge {
-        padding: 5px 10px;
-        border-radius: 12px;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    .category-organic {
-        background: #E8F5E9;
-        color: #4CAF50;
-    }
-
-    .category-dairy {
-        background: #FFF3E0;
-        color: #FF9800;
-    }
-
-    .category-grains {
-        background: #E1F5FE;
-        color: #2196F3;
-    }
-
-    .category-vegetables {
-        background: #F1F8E9;
-        color: #8BC34A;
-    }
-
-    /* Timeline styles */
-    .timeline {
-        position: relative;
-        padding-left: 30px;
-    }
-
-        .timeline::before {
-            content: "";
-            position: absolute;
-            left: 9px;
-            top: 10px;
-            bottom: 10px;
-            width: 2px;
-            background: #eee;
-        }
-
-    .timeline-item {
-        margin-bottom: 20px;
-        position: relative;
-    }
-
-    .timeline-marker {
-        position: absolute;
-        left: -30px;
-        top: 4px;
-        width: 20px;
-        height: 20px;
-        border-radius: 50%;
-        z-index: 1;
-    }
-
-    .timeline-content {
-        padding-bottom: 10px;
-    }
-
-    .timeline-title {
-        font-size: 14px;
-        font-weight: 600;
-        margin-bottom: 5px;
-    }
-
-    .timeline-text {
-        font-size: 13px;
-        color: #666;
-        margin-bottom: 0;
-    }
-
-    /* Print styles */
-    @@media print {
-        .page-header, .btn, .card-header, .breadcrumb {
-        display: none;
-    }
-
-    body {
-        background-color: white;
-    }
-
-    .card {
-        border: none;
-        box-shadow: none;
-    }
-
-    .dashboard-content {
-        padding: 0;
-    }
-
-    }
-</style>
 
 @functions {
     private string GetAvatarColor(int id)

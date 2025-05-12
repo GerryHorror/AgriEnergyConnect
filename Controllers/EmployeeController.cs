@@ -297,7 +297,7 @@ namespace AgriEnergyConnect.Controllers
 
         [HttpGet]
         [Route("Employee/ViewFarmerProducts/{farmerId}")]
-        public async Task<IActionResult> ViewFarmerProducts(int farmerId, string searchTerm = "", string category = "", DateTime? startDate = null, DateTime? endDate = null)
+        public async Task<IActionResult> ViewFarmerProducts(int farmerId, string searchTerm = "", string category = "", string statusFilter = "", DateTime? startDate = null, DateTime? endDate = null)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var user = await _authService.GetUserByIdAsync(userId);
@@ -325,6 +325,20 @@ namespace AgriEnergyConnect.Controllers
                 EndDate = endDate
             };
 
+            // Apply active status filter if provided
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                if (statusFilter == "active")
+                {
+                    filter.ActiveOnly = true;
+                }
+                else if (statusFilter == "inactive")
+                {
+                    filter.ActiveOnly = false;
+                }
+                // If statusFilter is empty or "all", don't set ActiveOnly (show all)
+            }
+
             // Get products with filter
             var products = await _productService.GetFilteredProductDTOsAsync(filter);
 
@@ -338,6 +352,7 @@ namespace AgriEnergyConnect.Controllers
             ViewBag.Categories = allCategories;
             ViewBag.SearchTerm = searchTerm;
             ViewBag.SelectedCategory = category;
+            ViewBag.SelectedStatus = statusFilter;
             ViewBag.StartDate = startDate;
             ViewBag.EndDate = endDate;
 
@@ -346,7 +361,7 @@ namespace AgriEnergyConnect.Controllers
 
         [HttpGet]
         [Route("Employee/Products")]
-        public async Task<IActionResult> Products(string searchTerm = "", string category = "", string farmerFilter = "", DateTime? startDate = null, DateTime? endDate = null, int page = 1, int pageSize = 10)
+        public async Task<IActionResult> Products(string searchTerm = "", string category = "", string farmerFilter = "", string statusFilter = "", DateTime? startDate = null, DateTime? endDate = null, int page = 1, int pageSize = 10)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
             var user = await _authService.GetUserByIdAsync(userId);
@@ -377,6 +392,20 @@ namespace AgriEnergyConnect.Controllers
                 filter.FarmerId = farmerIdFilter;
             }
 
+            // Apply active status filter if provided
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                if (statusFilter == "active")
+                {
+                    filter.ActiveOnly = true;
+                }
+                else if (statusFilter == "inactive")
+                {
+                    filter.ActiveOnly = false;
+                }
+                // If statusFilter is empty or "all", don't set ActiveOnly (show all)
+            }
+
             // Get products with filter
             var allProducts = await _productService.GetFilteredProductDTOsAsync(filter);
 
@@ -397,6 +426,7 @@ namespace AgriEnergyConnect.Controllers
             ViewBag.SearchTerm = searchTerm;
             ViewBag.SelectedCategory = category;
             ViewBag.SelectedFarmer = farmerFilter;
+            ViewBag.SelectedStatus = statusFilter;
             ViewBag.StartDate = startDate;
             ViewBag.EndDate = endDate;
             ViewBag.CurrentPage = page;
@@ -665,6 +695,84 @@ namespace AgriEnergyConnect.Controllers
             {
                 TempData["ErrorMessage"] = $"Error reactivating farmer: {ex.Message}";
                 return RedirectToAction(nameof(ManageFarmers));
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("Employee/DeactivateProduct/{productId}")]
+        public async Task<IActionResult> DeactivateProduct(int productId, string returnUrl = null)
+        {
+            try
+            {
+                var product = await _productService.GetProductByIdAsync(productId);
+                if (product == null)
+                    return NotFound();
+
+                // Deactivate the product
+                product.IsActive = false;
+
+                // Update the product
+                await _productService.UpdateProductAsync(product);
+
+                TempData["SuccessMessage"] = $"Product '{product.Name}' has been marked as inactive/out of stock.";
+
+                // Redirect back to the referring page if specified
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+
+                // Default redirect to products page
+                return RedirectToAction(nameof(Products));
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error deactivating product: {ex.Message}";
+
+                // Redirect back to the referring page if specified
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+
+                // Default redirect to products page
+                return RedirectToAction(nameof(Products));
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Route("Employee/ActivateProduct/{productId}")]
+        public async Task<IActionResult> ActivateProduct(int productId, string returnUrl = null)
+        {
+            try
+            {
+                var product = await _productService.GetProductByIdAsync(productId);
+                if (product == null)
+                    return NotFound();
+
+                // Activate the product
+                product.IsActive = true;
+
+                // Update the product
+                await _productService.UpdateProductAsync(product);
+
+                TempData["SuccessMessage"] = $"Product '{product.Name}' has been marked as active/in stock.";
+
+                // Redirect back to the referring page if specified
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+
+                // Default redirect to products page
+                return RedirectToAction(nameof(Products));
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error activating product: {ex.Message}";
+
+                // Redirect back to the referring page if specified
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
+
+                // Default redirect to products page
+                return RedirectToAction(nameof(Products));
             }
         }
     }
