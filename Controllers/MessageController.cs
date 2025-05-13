@@ -58,7 +58,7 @@ namespace AgriEnergyConnect.Controllers
         public async Task<IActionResult> SendMessage(int RecipientId, string Subject, string Content)
         {
             var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            if (string.IsNullOrWhiteSpace(Subject) || string.IsNullOrWhiteSpace(Content) || RecipientId == 0)
+            if (!_messageService.ValidateMessageInput(Subject, Content, RecipientId))
             {
                 TempData["ErrorMessage"] = "All fields are required.";
                 return RedirectToAction("Index");
@@ -81,11 +81,11 @@ namespace AgriEnergyConnect.Controllers
         public async Task<IActionResult> View(int id, bool reply = false)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var messageDto = await _messageService.GetMessageDTOByIdAsync(id);
-            if (messageDto == null || (messageDto.RecipientId != userId && messageDto.SenderId != userId))
+            if (!await _messageService.HasMessageAccessAsync(id, userId))
             {
                 return NotFound();
             }
+            var messageDto = await _messageService.GetMessageDTOByIdAsync(id);
             ViewBag.Reply = reply;
             return View(messageDto);
         }
@@ -94,11 +94,11 @@ namespace AgriEnergyConnect.Controllers
         public async Task<IActionResult> GetMessageDetails(int id)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var messageDto = await _messageService.GetMessageDTOByIdAsync(id);
-            if (messageDto == null || (messageDto.RecipientId != userId && messageDto.SenderId != userId))
+            if (!await _messageService.HasMessageAccessAsync(id, userId))
             {
                 return NotFound();
             }
+            var messageDto = await _messageService.GetMessageDTOByIdAsync(id);
             return Json(messageDto);
         }
     }

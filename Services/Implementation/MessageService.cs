@@ -169,5 +169,29 @@ namespace AgriEnergyConnect.Services.Implementation
             }
             return false;
         }
+
+        // Validates message input parameters
+        // Parameters:
+        //   subject - The subject of the message
+        //   content - The content of the message
+        //   recipientId - The ID of the recipient
+        // Returns true if all parameters are valid, false otherwise
+        public bool ValidateMessageInput(string subject, string content, int recipientId)
+        {
+            return !string.IsNullOrWhiteSpace(subject) &&
+                   !string.IsNullOrWhiteSpace(content) &&
+                   recipientId != 0;
+        }
+
+        // Checks if a user has access to a message
+        // Parameters:
+        //   messageId - The ID of the message
+        //   userId - The ID of the user
+        // Returns true if the user has access to the message, false otherwise
+        public async Task<bool> HasMessageAccessAsync(int messageId, int userId)
+        {
+            var message = await _messageRepository.GetMessageByIdAsync(messageId);
+            return message != null && (message.RecipientId == userId || message.SenderId == userId);
+        }
     }
 }

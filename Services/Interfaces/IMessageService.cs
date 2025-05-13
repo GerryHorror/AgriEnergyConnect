@@ -64,5 +64,9 @@ namespace AgriEnergyConnect.Services.Interfaces
         Task<IEnumerable<Message>> GetUnreadMessagesAsync(int userId);
 
         Task<int> GetUnreadMessageCountAsync(int userId);
+
+        bool ValidateMessageInput(string subject, string content, int recipientId);
+
+        Task<bool> HasMessageAccessAsync(int messageId, int userId);
     }
 }
