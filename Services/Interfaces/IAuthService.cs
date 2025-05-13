@@ -1,4 +1,6 @@
 ﻿using AgriEnergyConnect.Models;
+using AgriEnergyConnect.Models.ViewModels;
+using System.Security.Claims;
 
 namespace AgriEnergyConnect.Services.Interfaces
 {
@@ -40,5 +42,9 @@ namespace AgriEnergyConnect.Services.Interfaces
         // Retrieves all users in the system.
         // Returns a list of User objects representing all users.
         Task<IEnumerable<User>> GetAllUsersAsync();
+
+        Task<User> RegisterUserAsync(RegisterViewModel model);
+
+        ClaimsIdentity CreateUserClaims(User user);
     }
 }
