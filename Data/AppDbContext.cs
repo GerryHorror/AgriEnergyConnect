@@ -39,16 +39,36 @@ namespace AgriEnergyConnect.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure the relationship between Message and User for the Sender.
-            // A message has one sender, and deleting a user will not delete their sent messages.
+            // Configure User entity
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Username)
+                .IsUnique();
+
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+
+            // Configure Farmer entity
+            modelBuilder.Entity<Farmer>()
+                .HasOne(f => f.User)
+                .WithMany()
+                .HasForeignKey(f => f.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure Product entity
+            modelBuilder.Entity<Product>()
+                .HasOne(p => p.Farmer)
+                .WithMany(f => f.Products)
+                .HasForeignKey(p => p.FarmerId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Configure Message entity
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Sender)
                 .WithMany()
                 .HasForeignKey(m => m.SenderId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // Configure the relationship between Message and User for the Recipient.
-            // A message has one recipient, and deleting a user will not delete their received messages.
             modelBuilder.Entity<Message>()
                 .HasOne(m => m.Recipient)
                 .WithMany()

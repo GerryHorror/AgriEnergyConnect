@@ -33,21 +33,21 @@ namespace AgriEnergyConnect.Services.Interfaces
 
         // Retrieves a specific message by its unique ID (MessageId).
         // Parameters:
-        //   messageId - The ID of the message you’re looking for.
-        // Returns the Message object if found, or null if it doesn’t exist.
+        //   messageId - The ID of the message you're looking for.
+        // Returns the Message object if found, or null if it doesn't exist.
         Task<Message> GetMessageByIdAsync(int messageId);
 
         // Retrieves detailed information for a specific message by its unique ID (MessageId).
         // Parameters:
-        //   messageId - The ID of the message you’re looking for.
-        // Returns a MessageDTO containing detailed information about the message, or null if it doesn’t exist.
+        //   messageId - The ID of the message you're looking for.
+        // Returns a MessageDTO containing detailed information about the message, or null if it doesn't exist.
         Task<MessageDTO> GetMessageDTOByIdAsync(int messageId);
 
         // Sends a new message from one user to another.
         // Parameters:
         //   senderId - The ID of the user sending the message.
         //   recipientId - The ID of the user receiving the message.
-        //   subject - The subject or title of the message.
+        //   subject - The subject of the message.
         //   content - The content or body of the message.
         // Returns the newly created Message object.
         Task<Message> SendMessageAsync(int senderId, int recipientId, string subject, string content);
@@ -56,7 +56,17 @@ namespace AgriEnergyConnect.Services.Interfaces
         // Parameters:
         //   messageId - The ID of the message to mark as read.
         //   userId - The ID of the user marking the message as read.
-        // Returns true if the operation was successful, or false if the message doesn’t exist or the user is not authorised.
+        // Returns true if the operation was successful, or false if the message doesn't exist or the user is not authorised.
         Task<bool> MarkAsReadAsync(int messageId, int userId);
+
+        Task<IEnumerable<Message>> GetConversationAsync(int userId1, int userId2);
+
+        Task<IEnumerable<Message>> GetUnreadMessagesAsync(int userId);
+
+        Task<int> GetUnreadMessageCountAsync(int userId);
+
+        bool ValidateMessageInput(string subject, string content, int recipientId);
+
+        Task<bool> HasMessageAccessAsync(int messageId, int userId);
     }
 }

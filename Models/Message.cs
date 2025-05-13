@@ -12,41 +12,47 @@ namespace AgriEnergyConnect.Models
         [Key]
         public int MessageId { get; set; }
 
-        // The subject of the message.
-        // This is a required field with a maximum length of 100 characters.
+        // Foreign key that links the Message entity to the User entity for the sender.
+        // This represents the user who sent the message.
         [Required]
-        [StringLength(100)]
-        public string Subject { get; set; }
+        public int SenderId { get; set; }
+
+        // Foreign key that links the Message entity to the User entity for the recipient.
+        // This represents the user who received the message.
+        [Required]
+        public int RecipientId { get; set; }
 
         // The content or body of the message.
         // This is a required field and can contain any length of text.
         [Required]
+        [StringLength(1000)]
         public string Content { get; set; }
 
-        // Foreign key that links the Message entity to the User entity for the sender.
-        // This represents the user who sent the message.
-        public int SenderId { get; set; }
+        // The date and time when the message was sent.
+        // Defaults to the current date and time when a new message is created.
+        [Required]
+        public DateTime SentDate { get; set; }
+
+        // The date and time when the message was read by the recipient.
+        public DateTime? ReadDate { get; set; }
+
+        // Read-only property to indicate if the message has been read
+        [NotMapped]
+        public bool IsRead => ReadDate != null;
 
         // Navigation property to the User entity for the sender.
         // This allows access to the details of the user who sent the message.
         [ForeignKey("SenderId")]
         public User Sender { get; set; }
 
-        // Foreign key that links the Message entity to the User entity for the recipient.
-        // This represents the user who received the message.
-        public int RecipientId { get; set; }
-
         // Navigation property to the User entity for the recipient.
         // This allows access to the details of the user who received the message.
         [ForeignKey("RecipientId")]
         public User Recipient { get; set; }
 
-        // The date and time when the message was sent.
-        // Defaults to the current date and time when a new message is created.
-        public DateTime SentDate { get; set; } = DateTime.Now;
-
-        // Indicates whether the message has been read by the recipient.
-        // Defaults to false, meaning the message is unread by default.
-        public bool IsRead { get; set; } = false;
+        // The subject of the message
+        [Required]
+        [StringLength(200)]
+        public string Subject { get; set; }
     }
 }
