@@ -193,5 +193,143 @@ namespace AgriEnergyConnect.Services.Implementation
             var products = await _productRepository.GetAllProductsAsync();
             return products.Select(p => p.Category).Distinct().ToList();
         }
+
+        public async Task<(IEnumerable<ProductDTO> Products, List<string> Categories)> GetFarmerProductsForViewAsync(int farmerId, string searchTerm = "", string category = "", string statusFilter = "", DateTime? startDate = null, DateTime? endDate = null)
+        {
+            // Create filter DTO
+            var filter = new ProductFilterDTO
+            {
+                FarmerId = farmerId,
+                SearchTerm = searchTerm,
+                Category = category,
+                StartDate = startDate,
+                EndDate = endDate
+            };
+
+            // Apply active status filter if provided
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                if (statusFilter == "active")
+                {
+                    filter.ActiveOnly = true;
+                }
+                else if (statusFilter == "inactive")
+                {
+                    filter.ActiveOnly = false;
+                }
+                // If statusFilter is empty or "all", don't set ActiveOnly (show all)
+            }
+
+            // Get products with filter
+            var products = await GetFilteredProductDTOsAsync(filter);
+
+            // Get all available categories for this farmer's products
+            var allCategories = products
+                .Select(p => p.Category)
+                .Distinct()
+                .OrderBy(c => c)
+                .ToList();
+
+            return (products, allCategories);
+        }
+
+        public async Task<(List<ProductDTO> Products, List<string> Categories, int TotalProducts, int TotalPages)> GetProductsForAdminViewAsync(string searchTerm = "", string category = "", string farmerFilter = "", string statusFilter = "", DateTime? startDate = null, DateTime? endDate = null, int page = 1, int pageSize = 10)
+        {
+            // Create filter DTO
+            var filter = new ProductFilterDTO
+            {
+                SearchTerm = searchTerm,
+                Category = category,
+                StartDate = startDate,
+                EndDate = endDate
+            };
+
+            // Apply farmer filter if provided
+            int? farmerIdFilter = null;
+            if (!string.IsNullOrEmpty(farmerFilter) && int.TryParse(farmerFilter, out int parsedId))
+            {
+                farmerIdFilter = parsedId;
+                filter.FarmerId = farmerIdFilter;
+            }
+
+            // Apply active status filter if provided
+            if (!string.IsNullOrEmpty(statusFilter))
+            {
+                if (statusFilter == "active")
+                {
+                    filter.ActiveOnly = true;
+                }
+                else if (statusFilter == "inactive")
+                {
+                    filter.ActiveOnly = false;
+                }
+                // If statusFilter is empty or "all", don't set ActiveOnly (show all)
+            }
+
+            // Get products with filter
+            var allProducts = await GetFilteredProductDTOsAsync(filter);
+
+            // Get available categories for all products
+            var allCategories = await GetAllCategoriesAsync();
+
+            // Apply pagination
+            var totalProducts = allProducts.Count();
+            var totalPages = (int)Math.Ceiling(totalProducts / (double)pageSize);
+            var paginatedProducts = allProducts
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            return (paginatedProducts, allCategories.ToList(), totalProducts, totalPages);
+        }
+
+        public async Task<(ProductDTO Product, Farmer AssociatedFarmer)> GetProductDetailsForViewAsync(int productId)
+        {
+            // Get the product details with associated farmer information
+            var product = await _productRepository.GetProductByIdAsync(productId);
+
+            if (product == null)
+                throw new KeyNotFoundException($"Product with ID {productId} not found");
+
+            // Check if Farmer is loaded, if not load it
+            if (product.Farmer == null)
+            {
+                throw new InvalidOperationException("Product's farmer information unavailable");
+            }
+
+            // Convert to DTO
+            var productDTO = MappingHelper.ToProductDTO(product);
+
+            // Return both the product DTO and the farmer entity
+            return (productDTO, product.Farmer);
+        }
+
+        public async Task DeactivateProductAsync(int productId)
+        {
+            var product = await _productRepository.GetProductByIdAsync(productId);
+            if (product == null)
+                throw new KeyNotFoundException($"Product with ID {productId} not found");
+
+            // Only update if necessary
+            if (product.IsActive)
+            {
+                product.IsActive = false;
+                await _productRepository.UpdateProductAsync(product);
+            }
+        }
+
+        public async Task ActivateProductAsync(int productId)
+        {
+            var product = await _productRepository.GetProductByIdAsync(productId);
+            if (product == null)
+                throw new KeyNotFoundException($"Product with ID {productId} not found");
+
+            // Only update if necessary
+            if (!product.IsActive)
+            {
+                product.IsActive = true;
+                await _productRepository.UpdateProductAsync(product);
+            }
+        }
     }
 }

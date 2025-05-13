@@ -75,5 +75,15 @@ namespace AgriEnergyConnect.Services.Interfaces
         // Retrieves all unique product categories from the database.
         // Returns a collection of strings representing the available product categories.
         Task<IEnumerable<string>> GetAllCategoriesAsync();
+
+        Task<(IEnumerable<ProductDTO> Products, List<string> Categories)> GetFarmerProductsForViewAsync(int farmerId, string searchTerm = "", string category = "", string statusFilter = "", DateTime? startDate = null, DateTime? endDate = null);
+
+        Task<(List<ProductDTO> Products, List<string> Categories, int TotalProducts, int TotalPages)> GetProductsForAdminViewAsync(string searchTerm = "", string category = "", string farmerFilter = "", string statusFilter = "", DateTime? startDate = null, DateTime? endDate = null, int page = 1, int pageSize = 10);
+
+        Task<(ProductDTO Product, Farmer AssociatedFarmer)> GetProductDetailsForViewAsync(int productId);
+
+        Task DeactivateProductAsync(int productId);
+
+        Task ActivateProductAsync(int productId);
     }
 }
