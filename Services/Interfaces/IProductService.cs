@@ -1,5 +1,6 @@
 ﻿using AgriEnergyConnect.DTOs;
 using AgriEnergyConnect.Models;
+using AgriEnergyConnect.Models.ViewModels;
 
 namespace AgriEnergyConnect.Services.Interfaces
 {
@@ -85,5 +86,13 @@ namespace AgriEnergyConnect.Services.Interfaces
         Task DeactivateProductAsync(int productId);
 
         Task ActivateProductAsync(int productId);
+
+        Task<Product> CreateProductFromViewModelAsync(ProductViewModel model, int farmerId);
+
+        Task<Product> UpdateProductFromViewModelAsync(ProductViewModel model, int farmerId);
+
+        Task<ProductViewModel> GetProductForEditingAsync(int productId, int farmerId);
+
+        Task<FarmerProductsViewModel> GetFarmerProductsAsync(int farmerId, string searchTerm = null, string selectedCategory = null, DateTime? startDate = null, DateTime? endDate = null);
     }
 }

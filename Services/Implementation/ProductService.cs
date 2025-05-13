@@ -1,6 +1,8 @@
 ﻿using AgriEnergyConnect.DTOs;
 using AgriEnergyConnect.Helpers;
 using AgriEnergyConnect.Models;
+using AgriEnergyConnect.Models.ViewModels;
+using AgriEnergyConnect.Repositories.Implementation;
 using AgriEnergyConnect.Repositories.Interfaces;
 using AgriEnergyConnect.Services.Interfaces;
 
@@ -13,11 +15,14 @@ namespace AgriEnergyConnect.Services.Implementation
     {
         private readonly IProductRepository _productRepository;
 
+        private readonly IFarmerRepository _farmerRepository;
+
         // Constructor that accepts the IProductRepository to interact with the database.
         // Dependency injection is used to provide the repository.
-        public ProductService(IProductRepository productRepository)
+        public ProductService(IProductRepository productRepository, IFarmerRepository farmerRepository)
         {
             _productRepository = productRepository;
+            _farmerRepository = farmerRepository;
         }
 
         // Retrieves all products from the database.
@@ -330,6 +335,128 @@ namespace AgriEnergyConnect.Services.Implementation
                 product.IsActive = true;
                 await _productRepository.UpdateProductAsync(product);
             }
+        }
+
+        public async Task<Product> CreateProductFromViewModelAsync(ProductViewModel model, int farmerId)
+        {
+            if (model == null)
+                throw new ArgumentNullException(nameof(model));
+
+            // Create new product entity
+            var product = new Product
+            {
+                Name = model.Name,
+                Category = model.Category,
+                ProductionDate = model.ProductionDate,
+                Description = model.Description,
+                FarmerId = farmerId,
+                CreatedDate = DateTime.Now,
+                IsActive = true // Default to active
+            };
+
+            // Save product
+            await _productRepository.AddProductAsync(product);
+
+            return product;
+        }
+
+        public async Task<Product> UpdateProductFromViewModelAsync(ProductViewModel model, int farmerId)
+        {
+            if (model == null)
+                throw new ArgumentNullException(nameof(model));
+
+            // Get existing product
+            var product = await _productRepository.GetProductByIdAsync(model.ProductId);
+
+            if (product == null)
+                throw new KeyNotFoundException($"Product with ID {model.ProductId} not found");
+
+            // Validate that the product belongs to the given farmer
+            if (product.FarmerId != farmerId)
+                throw new UnauthorizedAccessException("Not authorized to edit this product");
+
+            // Update product properties
+            product.Name = model.Name;
+            product.Category = model.Category;
+            product.ProductionDate = model.ProductionDate;
+            product.Description = model.Description;
+
+            // Save changes
+            await _productRepository.UpdateProductAsync(product);
+
+            return product;
+        }
+
+        public async Task<ProductViewModel> GetProductForEditingAsync(int productId, int farmerId)
+        {
+            var product = await _productRepository.GetProductByIdAsync(productId);
+
+            if (product == null)
+                throw new KeyNotFoundException($"Product with ID {productId} not found");
+
+            // Validate that the product belongs to the given farmer
+            if (product.FarmerId != farmerId)
+                throw new UnauthorizedAccessException("Not authorized to edit this product");
+
+            // Map to view model
+            var viewModel = new ProductViewModel
+            {
+                ProductId = product.ProductId,
+                Name = product.Name,
+                Category = product.Category,
+                ProductionDate = product.ProductionDate,
+                Description = product.Description,
+                FarmerId = product.FarmerId
+            };
+
+            return viewModel;
+        }
+
+        public async Task<FarmerProductsViewModel> GetFarmerProductsAsync(int farmerId, string searchTerm = null,
+            string selectedCategory = null, DateTime? startDate = null, DateTime? endDate = null)
+        {
+            // Create filter DTO
+            var filter = new ProductFilterDTO
+            {
+                FarmerId = farmerId,
+                SearchTerm = searchTerm,
+                Category = selectedCategory,
+                StartDate = startDate,
+                EndDate = endDate
+            };
+
+            // Get products with filter
+            var productDTOs = await GetFilteredProductDTOsAsync(filter);
+
+            // Get farmer information
+            var farmer = await _farmerRepository.GetFarmerByIdAsync(farmerId);
+            if (farmer == null)
+                throw new KeyNotFoundException($"Farmer with ID {farmerId} not found");
+
+            // Map products to view models
+            var productViewModels = productDTOs.Select(p => new ProductViewModel
+            {
+                ProductId = p.ProductId,
+                Name = p.Name,
+                Category = p.Category,
+                Description = p.Description,
+                ProductionDate = p.ProductionDate,
+                FarmerId = p.FarmerId
+            }).ToList();
+
+            // Create the FarmerProductsViewModel
+            var viewModel = new FarmerProductsViewModel
+            {
+                FarmName = farmer.FarmName,
+                TotalProducts = productViewModels.Count,
+                Products = productViewModels,
+                SearchTerm = searchTerm,
+                SelectedCategory = selectedCategory,
+                FilterStartDate = startDate,
+                FilterEndDate = endDate
+            };
+
+            return viewModel;
         }
     }
 }

@@ -39,6 +39,7 @@ builder.Services.AddScoped<IFarmerService, FarmerService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
+builder.Services.AddScoped<IFarmerDashboardService, FarmerDashboardService>();
 
 // Session configuration (if needed)
 builder.Services.AddSession(options =>
