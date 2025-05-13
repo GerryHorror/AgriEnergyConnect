@@ -28,7 +28,10 @@
             <nav class="main-navigation">
                 <a asp-action="Dashboard" asp-controller="Farmer" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")">Dashboard</a>
                 <a asp-action="Products" asp-controller="Farmer" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Products" || ViewContext.RouteData.Values["Action"].ToString() == "AddProduct" || ViewContext.RouteData.Values["Action"].ToString() == "EditProduct" || ViewContext.RouteData.Values["Action"].ToString() == "ProductDetails" ? "active" : "")">My Products</a>
-                <a asp-action="Inbox" asp-controller="Message" class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Message" ? "active" : "")">Messages</a>
+                <a asp-action="Index" asp-controller="Message" class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Message" ? "active" : "")">
+                    Messages
+                    @await Component.InvokeAsync("UnreadMessageCount")
+                </a>
                 <a asp-action="Profile" asp-controller="Farmer" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Profile" ? "active" : "")">Profile</a>
                 <a href="javascript:document.getElementById('logoutForm').submit();" class="nav-link logout">Logout</a>
             </nav>

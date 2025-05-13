@@ -74,8 +74,9 @@
                     </a>
                 </li>
                 <li>
-                    <a href="@Url.Action("Inbox", "Message")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Inbox" || ViewContext.RouteData.Values["Action"].ToString() == "View" || ViewContext.RouteData.Values["Action"].ToString() == "Send" ? "active" : "")">
+                    <a href="@Url.Action("Index", "Message")" class="@(ViewContext.RouteData.Values["Controller"].ToString() == "Message" ? "active" : "")">
                         <span class="nav-icon"><i class="fa fa-envelope"></i></span> Messages
+                        @await Component.InvokeAsync("UnreadMessageCount")
                     </a>
                 </li>
                 <li>

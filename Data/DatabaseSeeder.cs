@@ -124,7 +124,7 @@ namespace AgriEnergyConnect.Data
                     SenderId = adminUser.UserId,
                     RecipientId = farmerUser.UserId,
                     SentDate = thirtyDaysAgo,
-                    IsRead = true
+                    ReadDate = thirtyDaysAgo // Mark as read
                 },
                 new Message
                 {
@@ -133,7 +133,7 @@ namespace AgriEnergyConnect.Data
                     SenderId = adminUser.UserId,
                     RecipientId = farmerUser.UserId,
                     SentDate = now,
-                    IsRead = false
+                    ReadDate = null // Unread
                 }
             };
             context.Messages.AddRange(messages);

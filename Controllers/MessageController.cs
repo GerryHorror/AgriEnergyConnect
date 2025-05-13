@@ -1,7 +1,9 @@
-﻿using AgriEnergyConnect.Services.Interfaces;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
+using AgriEnergyConnect.Services.Interfaces;
 using System.Security.Claims;
+using AgriEnergyConnect.Models;
+using System.Linq;
 
 namespace AgriEnergyConnect.Controllers
 {
@@ -14,125 +16,90 @@ namespace AgriEnergyConnect.Controllers
         // Services for managing messages, farmers, and authentication.
         private readonly IMessageService _messageService;
 
-        private readonly IFarmerService _farmerService;
         private readonly IAuthService _authService;
 
         // Constructor for the MessageController class.
         // Parameters:
         //   messageService - The service for managing messages.
-        //   farmerService - The service for managing farmers.
         //   authService - The service for managing user authentication.
-        public MessageController(IMessageService messageService, IFarmerService farmerService, IAuthService authService)
+        public MessageController(IMessageService messageService, IAuthService authService)
         {
             _messageService = messageService;
-            _farmerService = farmerService;
             _authService = authService;
         }
 
-        // Displays the inbox messages for the logged-in user.
-        [HttpGet]
-        public async Task<IActionResult> Inbox()
+        public async Task<IActionResult> Index()
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
-            // Retrieve inbox messages for the user - FIXED: Use GetInboxMessagesSummariesAsync instead of GetInboxMessagesAsync
-            var messages = await _messageService.GetInboxMessagesSummariesAsync(userId);
-
-            return View(messages);
-        }
-
-        // Displays the form for sending a new message.
-        // This action is restricted to users with the "Employee" role.
-        [HttpGet]
-        [Authorize(Roles = "Employee")]
-        public async Task<IActionResult> Send()
-        {
-            // Retrieve all farmers to populate the recipient dropdown
-            ViewBag.Farmers = await _farmerService.GetAllFamersAsync();
-
+            var inboxMessages = await _messageService.GetInboxMessagesAsync(userId);
+            var sentMessages = await _messageService.GetSentMessagesAsync(userId);
+            var users = (await _authService.GetAllUsersAsync())
+                .Where(u => u.UserId != userId && u.IsActive)
+                .ToList();
+            ViewBag.InboxMessages = inboxMessages;
+            ViewBag.SentMessages = sentMessages;
+            ViewBag.Users = users;
+            ViewBag.CurrentUserId = userId;
             return View();
         }
 
-        // Handles the submission of the form for sending a new message.
-        // Parameters:
-        //   recipientId - The ID of the recipient of the message.
-        //   subject - The subject of the message.
-        //   content - The content of the message.
-        // Returns a redirect to the sent messages page on success or redisplays the form on failure.
-        [HttpPost]
-        [Authorize(Roles = "Employee")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Send(int recipientId, string subject, string content)
+        public async Task<IActionResult> Conversation(int userId)
         {
-            if (string.IsNullOrEmpty(subject) || string.IsNullOrEmpty(content))
-            {
-                ModelState.AddModelError(string.Empty, "Subject and message content are required.");
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var messages = await _messageService.GetConversationAsync(currentUserId, userId);
+            var otherUser = await _authService.GetUserByIdAsync(userId);
 
-                // Repopulate the farmers list for the form
-                ViewBag.Farmers = await _farmerService.GetAllFamersAsync();
-
-                return View();
-            }
-
-            var senderId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
-            try
-            {
-                // Send the message
-                await _messageService.SendMessageAsync(senderId, recipientId, subject, content);
-                return RedirectToAction(nameof(SentMessages));
-            }
-            catch (Exception ex)
-            {
-                ModelState.AddModelError(string.Empty, $"Error sending message: {ex.Message}");
-                ViewBag.Farmers = await _farmerService.GetAllFamersAsync();
-                return View();
-            }
-        }
-
-        // Displays the sent messages for the logged-in user.
-        // This action is restricted to users with the "Employee" role.
-        [HttpGet]
-        [Authorize(Roles = "Employee")]
-        public async Task<IActionResult> SentMessages()
-        {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
-            // Retrieve sent messages for the user - FIXED: Use GetSentMessagesSummariesAsync to get DTOs
-            var messages = await _messageService.GetSentMessagesSummariesAsync(userId);
-
+            ViewBag.OtherUser = otherUser;
             return View(messages);
         }
 
-        // Displays the details of a specific message.
-        // Parameters:
-        //   id - The ID of the message to view.
-        [HttpGet]
-        public async Task<IActionResult> View(int id)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SendMessage(int RecipientId, string Subject, string Content)
+        {
+            var currentUserId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            if (string.IsNullOrWhiteSpace(Subject) || string.IsNullOrWhiteSpace(Content) || RecipientId == 0)
+            {
+                TempData["ErrorMessage"] = "All fields are required.";
+                return RedirectToAction("Index");
+            }
+            await _messageService.SendMessageAsync(currentUserId, RecipientId, Subject, Content);
+            TempData["SuccessMessage"] = "Message sent successfully.";
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> MarkAsRead(int messageId)
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var result = await _messageService.MarkAsReadAsync(messageId, userId);
+            return result ? Ok() : BadRequest("Message not found or unauthorized");
+        }
 
-            // Retrieve the message by ID - FIXED: Use GetMessageDTOByIdAsync to get DTO
-            var message = await _messageService.GetMessageDTOByIdAsync(id);
-
-            if (message == null)
+        [HttpGet]
+        public async Task<IActionResult> View(int id, bool reply = false)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var messageDto = await _messageService.GetMessageDTOByIdAsync(id);
+            if (messageDto == null || (messageDto.RecipientId != userId && messageDto.SenderId != userId))
             {
                 return NotFound();
             }
+            ViewBag.Reply = reply;
+            return View(messageDto);
+        }
 
-            // Ensure the user is either the sender or recipient of the message
-            if (message.SenderId != userId && message.RecipientId != userId)
+        [HttpGet]
+        public async Task<IActionResult> GetMessageDetails(int id)
+        {
+            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+            var messageDto = await _messageService.GetMessageDTOByIdAsync(id);
+            if (messageDto == null || (messageDto.RecipientId != userId && messageDto.SenderId != userId))
             {
-                return Forbid();
+                return NotFound();
             }
-
-            // Mark the message as read if the current user is the recipient
-            if (message.RecipientId == userId && !message.IsRead)
-            {
-                await _messageService.MarkAsReadAsync(id, userId);
-            }
-
-            return View(message);
+            return Json(messageDto);
         }
     }
 }

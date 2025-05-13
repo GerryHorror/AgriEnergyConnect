@@ -3,6 +3,8 @@ using AgriEnergyConnect.Models;
 using AgriEnergyConnect.Repositories.Interfaces;
 using AgriEnergyConnect.Services.Interfaces;
 using AgriEnergyConnect.Helpers;
+using AgriEnergyConnect.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace AgriEnergyConnect.Services.Implementation
 {
@@ -12,12 +14,14 @@ namespace AgriEnergyConnect.Services.Implementation
     public class MessageService : IMessageService
     {
         private readonly IMessageRepository _messageRepository;
+        private readonly AppDbContext _context;
 
         // Constructor that accepts the IMessageRepository to interact with the database.
         // Dependency injection is used to provide the repository.
-        public MessageService(IMessageRepository messageRepository)
+        public MessageService(IMessageRepository messageRepository, AppDbContext context)
         {
             _messageRepository = messageRepository;
+            _context = context;
         }
 
         // Retrieves all messages received by a specific user (inbox).
@@ -60,8 +64,8 @@ namespace AgriEnergyConnect.Services.Implementation
 
         // Retrieves a specific message by its unique ID (MessageId).
         // Parameters:
-        //   messageId - The ID of the message you’re looking for.
-        // Returns the Message object if found, or null if it doesn’t exist.
+        //   messageId - The ID of the message you're looking for.
+        // Returns the Message object if found, or null if it doesn't exist.
         public async Task<Message> GetMessageByIdAsync(int messageId)
         {
             return await _messageRepository.GetMessageByIdAsync(messageId);
@@ -69,8 +73,8 @@ namespace AgriEnergyConnect.Services.Implementation
 
         // Retrieves detailed information for a specific message by its unique ID (MessageId).
         // Parameters:
-        //   messageId - The ID of the message you’re looking for.
-        // Returns a MessageDTO containing detailed information about the message, or null if it doesn’t exist.
+        //   messageId - The ID of the message you're looking for.
+        // Returns a MessageDTO containing detailed information about the message, or null if it doesn't exist.
         public async Task<MessageDTO> GetMessageDTOByIdAsync(int messageId)
         {
             var message = await _messageRepository.GetMessageByIdAsync(messageId);
@@ -81,55 +85,89 @@ namespace AgriEnergyConnect.Services.Implementation
         // Parameters:
         //   senderId - The ID of the user sending the message.
         //   recipientId - The ID of the user receiving the message.
-        //   subject - The subject or title of the message.
+        //   subject - The subject of the message.
         //   content - The content or body of the message.
         // Returns the newly created Message object.
         // Throws an ArgumentException if the subject or content is null or empty.
         public async Task<Message> SendMessageAsync(int senderId, int recipientId, string subject, string content)
         {
-            if (string.IsNullOrEmpty(subject) || string.IsNullOrEmpty(content))
+            if (string.IsNullOrEmpty(subject))
             {
-                throw new ArgumentException("Subject and content are required.");
+                throw new ArgumentException("Subject is required.");
+            }
+            if (string.IsNullOrEmpty(content))
+            {
+                throw new ArgumentException("Content is required.");
             }
 
             var message = new Message
             {
-                Subject = subject,
-                Content = content,
                 SenderId = senderId,
                 RecipientId = recipientId,
-                SentDate = DateTime.Now,
-                IsRead = false
+                Subject = subject,
+                Content = content,
+                SentDate = DateTime.Now
             };
 
-            await _messageRepository.AddMessageAsync(message);
+            await _context.Messages.AddAsync(message);
+            await _context.SaveChangesAsync();
             return message;
+        }
+
+        // Retrieves a conversation between two users.
+        // Parameters:
+        //   userId1 - The ID of the first user in the conversation.
+        //   userId2 - The ID of the second user in the conversation.
+        // Returns a collection of Message objects representing the conversation.
+        public async Task<IEnumerable<Message>> GetConversationAsync(int userId1, int userId2)
+        {
+            return await _context.Messages
+                .Include(m => m.Sender)
+                .Include(m => m.Recipient)
+                .Where(m => (m.SenderId == userId1 && m.RecipientId == userId2) ||
+                           (m.SenderId == userId2 && m.RecipientId == userId1))
+                .OrderBy(m => m.SentDate)
+                .ToListAsync();
+        }
+
+        // Retrieves unread messages for a specific user.
+        // Parameters:
+        //   userId - The ID of the user whose unread messages you want to retrieve.
+        // Returns a collection of Message objects representing the user's unread messages.
+        public async Task<IEnumerable<Message>> GetUnreadMessagesAsync(int userId)
+        {
+            return await _context.Messages
+                .Include(m => m.Sender)
+                .Where(m => m.RecipientId == userId && m.ReadDate == null)
+                .OrderByDescending(m => m.SentDate)
+                .ToListAsync();
+        }
+
+        // Retrieves the count of unread messages for a specific user.
+        // Parameters:
+        //   userId - The ID of the user whose unread message count you want to retrieve.
+        // Returns the count of unread messages for the user.
+        public async Task<int> GetUnreadMessageCountAsync(int userId)
+        {
+            return await _context.Messages
+                .CountAsync(m => m.RecipientId == userId && m.ReadDate == null);
         }
 
         // Marks a specific message as read by a user.
         // Parameters:
         //   messageId - The ID of the message to mark as read.
         //   userId - The ID of the user marking the message as read.
-        // Returns true if the operation was successful, or false if the message doesn’t exist
-        // or the user is not authorised to mark it as read.
+        // Returns true if the operation was successful, or false if the message doesn't exist or the user is not authorized.
         public async Task<bool> MarkAsReadAsync(int messageId, int userId)
         {
-            var message = await _messageRepository.GetMessageByIdAsync(messageId);
-            if (message == null)
-                return false;
-
-            // Ensure only the recipient can mark the message as read.
-            if (message.RecipientId != userId)
-                return false;
-
-            if (!message.IsRead)
+            var message = await _context.Messages.FindAsync(messageId);
+            if (message != null && message.RecipientId == userId)
             {
-                message.IsRead = true;
-                await _messageRepository.MarkAsReadAsync(messageId);
+                message.ReadDate = DateTime.Now;
+                await _context.SaveChangesAsync();
                 return true;
             }
-
-            return false; // Message already marked as read.
+            return false;
         }
     }
 }

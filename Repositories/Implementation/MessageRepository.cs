@@ -49,8 +49,8 @@ namespace AgriEnergyConnect.Repositories.Implementation
         // Finds a specific message by its unique ID (MessageId).
         // Includes both the sender and recipient details.
         // Parameters:
-        //   messageId - The ID of the message you’re looking for.
-        // Returns the Message object if found, or null if it doesn’t exist.
+        //   messageId - The ID of the message you're looking for.
+        // Returns the Message object if found, or null if it doesn't exist.
         public async Task<Message> GetMessageByIdAsync(int messageId)
         {
             return await _context.Messages
@@ -67,14 +67,13 @@ namespace AgriEnergyConnect.Repositories.Implementation
         public async Task AddMessageAsync(Message message)
         {
             message.SentDate = DateTime.Now; // Sets the sent date to the current date and time.
-            message.IsRead = false; // Marks the message as unread.
 
             await _context.Messages.AddAsync(message); // Adds the message to the context.
             await _context.SaveChangesAsync(); // Saves the changes to the database.
         }
 
         // Marks a specific message as read.
-        // Updates the IsRead property of the message in the database.
+        // Updates the ReadDate property of the message in the database.
         // Parameters:
         //   messageId - The ID of the message to mark as read.
         // If the message exists and is unread, it will be updated.
@@ -82,9 +81,9 @@ namespace AgriEnergyConnect.Repositories.Implementation
         {
             var message = await _context.Messages.FindAsync(messageId); // Finds the message by its ID.
 
-            if (message != null && !message.IsRead) // Checks if the message exists and is unread.
+            if (message != null && message.ReadDate == null) // Checks if the message exists and is unread.
             {
-                message.IsRead = true; // Marks the message as read.
+                message.ReadDate = DateTime.Now; // Marks the message as read.
                 await _context.SaveChangesAsync(); // Saves the changes to the database.
             }
         }
@@ -92,7 +91,7 @@ namespace AgriEnergyConnect.Repositories.Implementation
         // Checks if a message exists in the database by its unique ID (MessageId).
         // Parameters:
         //   messageId - The ID of the message you want to check.
-        // Returns true if the message exists, or false if it doesn’t.
+        // Returns true if the message exists, or false if it doesn't.
         public async Task<bool> MessageExistsAsync(int messageId)
         {
             return await _context.Messages
