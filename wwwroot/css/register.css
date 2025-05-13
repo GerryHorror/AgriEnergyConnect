@@ -1,0 +1,342 @@
+﻿/* Registration Form Styles */
+
+/* Main container for the registration card */
+.register-card {
+    max-width: 580px;
+    padding: 35px;
+    background-color: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    margin: 0 auto 30px;
+}
+
+    /* Title styling */
+    .register-card h2 {
+        font-size: 24px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 5px;
+        text-align: center;
+    }
+
+    .register-card .card-subtitle {
+        color: #666;
+        font-size: 16px;
+        margin-bottom: 25px;
+        text-align: center;
+    }
+
+/* Progress steps styling */
+.progress-steps {
+    display: flex;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+    .progress-steps::before {
+        content: "";
+        position: absolute;
+        top: 15px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #e0e0e0;
+        z-index: 1;
+    }
+
+.step {
+    flex: 1;
+    text-align: center;
+    position: relative;
+    z-index: 2;
+}
+
+.step-number {
+    width: 30px;
+    height: 30px;
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 5px;
+    font-weight: bold;
+    color: #888;
+    transition: all 0.3s;
+}
+
+.step.active .step-number {
+    background: #4CAF50;
+    border-color: #4CAF50;
+    color: white;
+}
+
+.step-label {
+    font-size: 12px;
+    color: #888;
+    font-weight: 500;
+}
+
+.step.active .step-label {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+/* Form section titles */
+.form-section-title {
+    margin-top: 25px;
+    margin-bottom: 15px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #4CAF50;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+}
+
+/* Form layout */
+.form-group-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.form-group.half {
+    flex: 1;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+    .form-group label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        font-size: 13px;
+        color: #555;
+    }
+
+/* Input fields */
+.input-with-icon {
+    position: relative;
+    overflow: hidden;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    border: 1.5px solid #e0e0e0;
+}
+
+    .input-with-icon:focus-within {
+        border-color: #4CAF50;
+        box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+    }
+
+    .input-with-icon i {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #aaa;
+        transition: color 0.3s ease;
+    }
+
+    .input-with-icon input,
+    .input-with-icon select {
+        padding: 12px 15px 12px 40px;
+        border: none;
+        width: 100%;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .input-with-icon:focus-within i {
+        color: #4CAF50;
+    }
+
+/* Validation messages */
+.validation-message {
+    display: block;
+    margin-top: 5px;
+    font-size: 12px;
+    color: #d32f2f;
+}
+
+/* Farmer toggle */
+.farmer-toggle {
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    transition: background 0.3s ease;
+}
+
+    .farmer-toggle:hover {
+        background: #f0f0f0;
+    }
+
+.toggle-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+    .toggle-label input[type="checkbox"] {
+        position: relative;
+        cursor: pointer;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        width: 50px;
+        height: 26px;
+        background: #e0e0e0;
+        border-radius: 50px;
+        transition: all .3s;
+        outline: none;
+        margin-right: 12px;
+    }
+
+        .toggle-label input[type="checkbox"]::after {
+            position: absolute;
+            content: "";
+            top: 3px;
+            left: 3px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            transition: all .3s;
+        }
+
+        .toggle-label input[type="checkbox"]:checked {
+            background: #4CAF50;
+        }
+
+            .toggle-label input[type="checkbox"]:checked::after {
+                left: calc(100% - 23px);
+            }
+
+.toggle-text {
+    font-size: 15px;
+    font-weight: 500;
+}
+
+/* Register button */
+.btn-register {
+    width: 100%;
+    padding: 13px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-top: 10px;
+}
+
+    .btn-register:hover {
+        background-color: #388E3C;
+    }
+
+/* Footer text */
+.login-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 14px;
+    color: #666;
+}
+
+    .login-footer a {
+        color: #4CAF50;
+        text-decoration: none;
+    }
+
+        .login-footer a:hover {
+            text-decoration: underline;
+        }
+
+.terms-text {
+    font-size: 12px;
+    text-align: center;
+    color: #888;
+    margin-top: 15px;
+}
+
+    .terms-text a {
+        color: #4CAF50;
+        text-decoration: none;
+    }
+
+        .terms-text a:hover {
+            text-decoration: underline;
+        }
+
+/* Container adjustments for scroll */
+.login-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Header styling */
+.login-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.app-title {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    margin: 10px 0 5px;
+}
+
+.app-subtitle {
+    color: #666;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+/* Auth body (parent of container) */
+.auth-body {
+    min-height: 100vh;
+    padding: 30px 0;
+    overflow-y: auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+    .register-card {
+        padding: 20px;
+        width: 100%;
+    }
+
+    .form-group-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .login-container {
+        padding: 10px;
+    }
+}
+
+/* Validation summary */
+.validation-summary {
+    background-color: #fff8f8;
+    border-left: 4px solid #d32f2f;
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    color: #d32f2f;
+}
+
+    .validation-summary ul {
+        margin: 5px 0 0 20px;
+        padding: 0;
+    }

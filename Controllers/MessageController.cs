@@ -35,8 +35,8 @@ namespace AgriEnergyConnect.Controllers
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            // Retrieve inbox messages for the user
-            var messages = await _messageService.GetInboxMessagesAsync(userId);
+            // Retrieve inbox messages for the user - FIXED: Use GetInboxMessagesSummariesAsync instead of GetInboxMessagesAsync
+            var messages = await _messageService.GetInboxMessagesSummariesAsync(userId);
 
             return View(messages);
         }
@@ -98,8 +98,8 @@ namespace AgriEnergyConnect.Controllers
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            // Retrieve sent messages for the user
-            var messages = await _messageService.GetSentMessagesAsync(userId);
+            // Retrieve sent messages for the user - FIXED: Use GetSentMessagesSummariesAsync to get DTOs
+            var messages = await _messageService.GetSentMessagesSummariesAsync(userId);
 
             return View(messages);
         }
@@ -112,8 +112,8 @@ namespace AgriEnergyConnect.Controllers
         {
             var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-            // Retrieve the message by ID
-            var message = await _messageService.GetMessageByIdAsync(id);
+            // Retrieve the message by ID - FIXED: Use GetMessageDTOByIdAsync to get DTO
+            var message = await _messageService.GetMessageDTOByIdAsync(id);
 
             if (message == null)
             {

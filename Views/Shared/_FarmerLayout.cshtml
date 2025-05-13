@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="~/lib/font-awesome/css/all.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
     <link rel="stylesheet" href="~/css/farmer-dashboard.css" />
-    <link rel="stylesheet" href="~/css/farmer-myproduct.css"/>
+    <link rel="stylesheet" href="~/css/farmer-myproduct.css" />
+    @RenderSection("Styles", required: false)
 </head>
 <body class="farmer-body">
     <header class="farmer-header">
@@ -25,11 +26,11 @@
             </div>
 
             <nav class="main-navigation">
-                <a asp-action="Dashboard" asp-controller="Farmer" class="nav-link active">Dashboard</a>
-                <a asp-action="Products" asp-controller="Farmer" class="nav-link">My Products</a>
-                <a asp-action="Inbox" asp-controller="Message" class="nav-link">Messages</a>
-                <a asp-action="Profile" asp-controller="Farmer" class="nav-link">Profile</a>
-                <a asp-action="Logout" asp-controller="Account" class="nav-link logout">Logout</a>
+                <a asp-action="Dashboard" asp-controller="Farmer" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Dashboard" ? "active" : "")">Dashboard</a>
+                <a asp-action="Products" asp-controller="Farmer" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Products" || ViewContext.RouteData.Values["Action"].ToString() == "AddProduct" || ViewContext.RouteData.Values["Action"].ToString() == "EditProduct" || ViewContext.RouteData.Values["Action"].ToString() == "ProductDetails" ? "active" : "")">My Products</a>
+                <a asp-action="Inbox" asp-controller="Message" class="nav-link @(ViewContext.RouteData.Values["Controller"].ToString() == "Message" ? "active" : "")">Messages</a>
+                <a asp-action="Profile" asp-controller="Farmer" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Profile" ? "active" : "")">Profile</a>
+                <a href="javascript:document.getElementById('logoutForm').submit();" class="nav-link logout">Logout</a>
             </nav>
         </div>
     </header>
@@ -48,6 +49,11 @@
             <p>Sustainable Farming • Green Energy • Innovation</p>
         </div>
     </footer>
+
+    <!-- Logout Form -->
+    <form id="logoutForm" asp-action="Logout" asp-controller="Account" method="post" style="display: none;">
+        @Html.AntiForgeryToken()
+    </form>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

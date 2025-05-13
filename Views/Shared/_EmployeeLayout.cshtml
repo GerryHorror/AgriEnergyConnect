@@ -74,8 +74,13 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Messages" ? "active" : "")">
+                    <a href="@Url.Action("Inbox", "Message")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Inbox" || ViewContext.RouteData.Values["Action"].ToString() == "View" || ViewContext.RouteData.Values["Action"].ToString() == "Send" ? "active" : "")">
                         <span class="nav-icon"><i class="fa fa-envelope"></i></span> Messages
+                    </a>
+                </li>
+                <li>
+                    <a href="@Url.Action("RegistrationRequests", "Account")" class="@(ViewContext.RouteData.Values["Action"].ToString() == "RegistrationRequests" ? "active" : "")">
+                        <span class="nav-icon"><i class="fa fa-user-check"></i></span> Registration Requests
                     </a>
                 </li>
                 <li>
@@ -96,6 +101,11 @@
     <main class="main-content">
         @RenderBody()
     </main>
+
+    <!-- Logout Form -->
+    <form id="logoutForm" asp-action="Logout" asp-controller="Account" method="post" style="display: none;">
+        @Html.AntiForgeryToken()
+    </form>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

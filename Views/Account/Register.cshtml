@@ -1,0 +1,198 @@
+﻿@model AgriEnergyConnect.Models.ViewModels.RegisterViewModel
+@{
+    ViewData["Title"] = "Create Account";
+    Layout = "_AuthLayout";
+}
+
+<link rel="stylesheet" href="~/css/register.css" />
+
+<div class="login-container">
+    <div class="login-header">
+        <div class="app-logo">
+            <!-- Displays the application logo using an SVG graphic. -->
+            <svg width="80" height="60" viewBox="0 0 80 60">
+                <path d="M10,20 Q25,10 40,20 T70,20" stroke="#4CAF50" stroke-width="3" fill="none" />
+                <path d="M0,30 Q20,15 40,30 T80,30" stroke="#4CAF50" stroke-width="3" fill="none" />
+                <path d="M10,40 Q25,30 40,40 T70,40" stroke="#4CAF50" stroke-width="3" fill="none" />
+            </svg>
+        </div>
+        <!-- Displays the application title and subtitle. -->
+        <h1 class="app-title">Agri-Energy Connect</h1>
+        <p class="app-subtitle">Sustainable Farming • Green Energy • Innovation</p>
+    </div>
+
+    <div class="register-card">
+        <!-- Displays the form title and subtitle. -->
+        <h2>Create Your Account</h2>
+        <p class="card-subtitle">Join our community of farmers and green energy innovators</p>
+
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <div class="step-label">Account Details</div>
+            </div>
+            <div class="step" id="farm-step">
+                <div class="step-number">2</div>
+                <div class="step-label">Farm Information</div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-label">Review</div>
+            </div>
+        </div>
+
+        <!-- Registration Form -->
+        <form asp-action="Register" asp-controller="Account" method="post" class="register-form">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger validation-summary">
+                    @Html.ValidationSummary()
+                </div>
+            }
+
+            <!-- Displays validation errors for the form. -->
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+            <!-- Personal Information Section -->
+            <h4 class="form-section-title">Personal Information</h4>
+
+            <div class="form-group-row">
+                <div class="form-group half">
+                    <label asp-for="FirstName">First Name</label>
+                    <div class="input-with-icon">
+                        <i class="fa fa-user"></i>
+                        <input asp-for="FirstName" class="form-control" placeholder="Enter your first name" />
+                    </div>
+                    <span asp-validation-for="FirstName" class="validation-message"></span>
+                </div>
+                <div class="form-group half">
+                    <label asp-for="LastName">Last Name</label>
+                    <div class="input-with-icon">
+                        <i class="fa fa-user"></i>
+                        <input asp-for="LastName" class="form-control" placeholder="Enter your last name" />
+                    </div>
+                    <span asp-validation-for="LastName" class="validation-message"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Email">Email Address</label>
+                <div class="input-with-icon">
+                    <i class="fa fa-envelope"></i>
+                    <input asp-for="Email" class="form-control" placeholder="Enter your email address" />
+                </div>
+                <span asp-validation-for="Email" class="validation-message"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="PhoneNumber">Phone Number</label>
+                <div class="input-with-icon">
+                    <i class="fa fa-phone"></i>
+                    <input asp-for="PhoneNumber" class="form-control" placeholder="Enter your phone number" />
+                </div>
+                <span asp-validation-for="PhoneNumber" class="validation-message"></span>
+            </div>
+
+            <!-- Account Information Section -->
+            <h4 class="form-section-title">Account Information</h4>
+
+            <div class="form-group">
+                <label asp-for="Username">Username</label>
+                <div class="input-with-icon">
+                    <i class="fa fa-user-circle"></i>
+                    <input asp-for="Username" class="form-control" placeholder="Choose a username" />
+                </div>
+                <span asp-validation-for="Username" class="validation-message"></span>
+            </div>
+
+            <div class="form-group-row">
+                <div class="form-group half">
+                    <label asp-for="Password">Password</label>
+                    <div class="input-with-icon">
+                        <i class="fa fa-lock"></i>
+                        <input asp-for="Password" class="form-control" placeholder="Create a password" type="password" />
+                    </div>
+                    <span asp-validation-for="Password" class="validation-message"></span>
+                </div>
+                <div class="form-group half">
+                    <label asp-for="ConfirmPassword">Confirm Password</label>
+                    <div class="input-with-icon">
+                        <i class="fa fa-lock"></i>
+                        <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm your password" type="password" />
+                    </div>
+                    <span asp-validation-for="ConfirmPassword" class="validation-message"></span>
+                </div>
+            </div>
+
+            <!-- Farmer Information Section (shown when registering as farmer) -->
+            <div class="farmer-section">
+                <div class="farmer-toggle">
+                    <label asp-for="IsFarmer" class="toggle-label">
+                        <input asp-for="IsFarmer" type="checkbox" id="is-farmer-checkbox" />
+                        <span class="toggle-text">I am registering as a Farmer</span>
+                    </label>
+                </div>
+
+                <div id="farmer-fields" style="display: none;">
+                    <h4 class="form-section-title">Farm Information</h4>
+
+                    <div class="form-group">
+                        <label asp-for="FarmName">Farm Name</label>
+                        <div class="input-with-icon">
+                            <i class="fa fa-tractor"></i>
+                            <input asp-for="FarmName" class="form-control" placeholder="Enter your farm name" />
+                        </div>
+                        <span asp-validation-for="FarmName" class="validation-message"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label asp-for="Location">Farm Location</label>
+                        <div class="input-with-icon">
+                            <i class="fa fa-map-marker-alt"></i>
+                            <input asp-for="Location" class="form-control" placeholder="Enter your farm location" />
+                        </div>
+                        <span asp-validation-for="Location" class="validation-message"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit" class="btn-register">Create Account</button>
+
+            <p class="login-footer">Already have an account? <a asp-action="Login" asp-controller="Account">Sign in</a></p>
+            <p class="terms-text">By creating an account, you agree to our <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></p>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Toggle farmer fields visibility based on checkbox
+            $('#is-farmer-checkbox').change(function() {
+                if($(this).is(':checked')) {
+                    $('#farmer-fields').slideDown();
+                    $('#farm-step').addClass('active');
+                } else {
+                    $('#farmer-fields').slideUp();
+                    $('#farm-step').removeClass('active');
+                }
+            });
+
+            // Check initial state
+            if($('#is-farmer-checkbox').is(':checked')) {
+                $('#farmer-fields').show();
+                $('#farm-step').addClass('active');
+            }
+
+            // Focus first field on page load
+            $('input[name="FirstName"]').focus();
+        });
+    </script>
+
+    @{
+        // Renders validation scripts for client-side validation.
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

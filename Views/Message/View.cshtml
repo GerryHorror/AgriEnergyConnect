@@ -1,0 +1,147 @@
+﻿@model AgriEnergyConnect.DTOs.MessageDTO
+@{
+    ViewData["Title"] = "View Message";
+    Layout = User.IsInRole("Employee") ? "_EmployeeLayout" : "_FarmerLayout";
+    var isEmployee = User.IsInRole("Employee");
+    var currentUserId = int.Parse(User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier).Value);
+    var isReceiver = Model.RecipientId == currentUserId;
+}
+
+<div class="@(isEmployee ? "dashboard-content" : "content-wrapper")">
+    <div class="page-header">
+        <div class="title-section">
+            <h1>Message Details</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item">
+                        <a href="@(isEmployee ? Url.Action("Dashboard", "Employee") : Url.Action("Dashboard", "Farmer"))">
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item"><a href="@Url.Action("Inbox", "Message")">Messages</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">View Message</li>
+                </ol>
+            </nav>
+        </div>
+        <a href="@Url.Action("Inbox", "Message")" class="btn btn-outline-secondary">
+            <i class="fa fa-arrow-left me-2"></i> Back to Inbox
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">@Model.Subject</h5>
+            <span class="message-date">@Model.SentDate.ToString("MMMM d, yyyy h:mm tt")</span>
+        </div>
+        <div class="card-body">
+            <div class="message-meta">
+                <div class="sender-info">
+                    <span class="meta-label">From:</span>
+                    <span class="meta-value">@Model.SenderName</span>
+                    <span class="badge @(Model.SenderRole == "Employee" ? "bg-primary" : "bg-success")">@Model.SenderRole</span>
+                </div>
+                <div class="recipient-info">
+                    <span class="meta-label">To:</span>
+                    <span class="meta-value">@Model.RecipientName</span>
+                    <span class="badge @(Model.RecipientRole == "Employee" ? "bg-primary" : "bg-success")">@Model.RecipientRole</span>
+                </div>
+            </div>
+
+            <div class="message-divider"></div>
+
+            <div class="message-content">
+                @Model.Content
+            </div>
+
+            @if (isEmployee && isReceiver)
+            {
+                <div class="message-actions">
+                    <a href="@Url.Action("Send", "Message", new { recipientId = Model.SenderId })" class="btn btn-primary">
+                        <i class="fa fa-reply me-2"></i> Reply
+                    </a>
+                </div>
+            }
+            else if (!isEmployee && isReceiver)
+            {
+                <div class="message-notification">
+                    <div class="alert alert-info">
+                        <i class="fa fa-info-circle me-2"></i>
+                        If you need to reply to this message, please contact the administrator through email or phone.
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .message-date {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .message-meta {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+
+    .sender-info, .recipient-info {
+        margin-bottom: 8px;
+    }
+
+    .meta-label {
+        font-weight: 600;
+        width: 60px;
+        display: inline-block;
+    }
+
+    .meta-value {
+        margin-right: 8px;
+    }
+
+    .message-divider {
+        height: 1px;
+        background-color: #e9ecef;
+        margin: 20px 0;
+    }
+
+    .message-content {
+        font-size: 15px;
+        line-height: 1.6;
+        padding: 10px;
+        min-height: 200px;
+        white-space: pre-line;
+    }
+
+    .message-actions {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .message-notification {
+        margin-top: 30px;
+    }
+
+    .btn-primary {
+        background-color: #4CAF50;
+        border-color: #4CAF50;
+    }
+
+        .btn-primary:hover {
+            background-color: #388E3C;
+            border-color: #388E3C;
+        }
+
+    .employee-body .btn-primary {
+        background-color: #00897B;
+        border-color: #00897B;
+    }
+
+        .employee-body .btn-primary:hover {
+            background-color: #00796B;
+            border-color: #00796B;
+        }
+</style>
