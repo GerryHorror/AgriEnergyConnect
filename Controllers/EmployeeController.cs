@@ -24,15 +24,21 @@ namespace AgriEnergyConnect.Controllers
         // The AuthService is used for user authentication and retrieval.
         private readonly IAuthService _authService;
 
+        // The DashboardService is used for retrieving dashboard data.
+        private readonly IDashboardService _dashboardService;
+
         // Constructor for the EmployeeController class.
         // Parameters:
         //   farmerService - The service for managing farmers.
         //   productService - The service for managing products.
-        public EmployeeController(IFarmerService farmerService, IProductService productService, IAuthService authService)
+        //   authService - The service for user authentication.
+        //   dashboardService - The service for retrieving dashboard data.
+        public EmployeeController(IFarmerService farmerService, IProductService productService, IAuthService authService, IDashboardService dashboardService)
         {
             _farmerService = farmerService;
             _productService = productService;
             _authService = authService;
+            _dashboardService = dashboardService;
         }
 
         // Displays the employee dashboard with summary data.
@@ -43,106 +49,16 @@ namespace AgriEnergyConnect.Controllers
             try
             {
                 var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-                var user = await _authService.GetUserByIdAsync(userId);
+                var viewModel = await _dashboardService.GetDashboardDataAsync(userId);
 
-                if (user == null)
-                    return NotFound();
-
-                // Set ViewBag employee data
-                ViewBag.Employee = new { User = user };
-
-                // Get all farmers and products for statistics
-                var farmers = await _farmerService.GetAllFamersAsync();
-                var farmerList = farmers.ToList();
-                var products = await _productService.GetAllProductsAsync();
-                var productList = products.ToList();
-                var allUsers = await _authService.GetAllUsersAsync();
-                var userList = allUsers.ToList();
-
-                // Calculate statistics
-                var totalFarmers = farmerList.Count;
-                var totalProducts = productList.Count;
-                var activeUsers = userList.Count(u => u.IsActive);
-                var totalUsers = userList.Count;
-
-                // Get all farmers for "Recent Farmers" section (not just recent additions)
-                var recentFarmers = farmerList
-                    .OrderByDescending(f => f.User?.CreatedDate ?? DateTime.MinValue)
-                    .Take(4)
-                    .ToList();
-
-                // Get recent products (last 7 days)
-                var recentProducts = productList
-                    .Where(p => p.CreatedDate >= DateTime.Now.AddDays(-7))
-                    .GroupBy(p => p.FarmerId)
-                    .Select(g => new { FarmerId = g.Key, Count = g.Count(), LastUpdate = g.Max(p => p.CreatedDate) })
-                    .ToList();
-
-                // Set ViewBag statistics
-                ViewBag.TotalFarmers = totalFarmers;
-                ViewBag.TotalProducts = totalProducts;
-                ViewBag.ActiveUsers = activeUsers;
-                ViewBag.NewFarmers = recentFarmers.Count(f => f.User?.CreatedDate >= DateTime.Now.AddDays(-7));
-                ViewBag.NewProducts = recentProducts.Sum(p => p.Count);
-                ViewBag.ActivePercentage = totalUsers > 0 ? Math.Round((decimal)activeUsers / totalUsers * 100, 1) : 0;
-
-                // Create recent activities using the static methods
-                var activities = new List<ActivityItem>();
-
-                // Add recent farmer additions (for the past week)
-                var newFarmers = recentFarmers.Where(f => f.User?.CreatedDate >= DateTime.Now.AddDays(-7)).Take(1);
-                foreach (var farmer in newFarmers)
-                {
-                    if (farmer.User != null)
-                    {
-                        activities.Add(ActivityItem.NewFarmerAdded(
-                            $"{farmer.User.FirstName} {farmer.User.LastName}",
-                            farmer.User.CreatedDate
-                        ));
-                    }
-                }
-
-                // Add recent product updates
-                foreach (var productGroup in recentProducts.Take(1))
-                {
-                    var farmer = farmerList.FirstOrDefault(f => f.FarmerId == productGroup.FarmerId);
-                    if (farmer?.User != null)
-                    {
-                        activities.Add(ActivityItem.ProductUpdate(
-                            $"{farmer.User.FirstName} {farmer.User.LastName}",
-                            productGroup.Count,
-                            productGroup.LastUpdate
-                        ));
-                    }
-                }
-
-                // Add a sample report activity
-                activities.Add(ActivityItem.ReportGenerated(
-                    "Monthly product",
-                    DateTime.Now.AddDays(-1).AddHours(-7).AddMinutes(-20)
-                ));
-
-                // Create the view model
-                var viewModel = new EmployeeDashboardViewModel
-                {
-                    Employee = user,
-                    TotalFarmers = totalFarmers,
-                    TotalProducts = totalProducts,
-                    ActiveUsers = activeUsers,
-                    NewFarmers = ViewBag.NewFarmers,
-                    NewProducts = ViewBag.NewProducts,
-                    ActivePercentage = ViewBag.ActivePercentage,
-                    // Map farmers to FarmerSummaryDTO ensuring to include the user details
-                    RecentFarmers = recentFarmers.Select(f => new FarmerSummaryDTO
-                    {
-                        FarmerId = f.FarmerId,
-                        FarmName = f.FarmName,
-                        Location = f.Location,
-                        OwnerName = f.User != null ? $"{f.User.FirstName ?? "Unknown"} {f.User.LastName ?? "Farmer"}".Trim() : "Unknown Farmer",
-                        ProductCount = f.Products?.Count ?? 0
-                    }).ToList(),
-                    RecentActivities = activities
-                };
+                // Set required ViewBag properties from the viewModel
+                ViewBag.Employee = new { User = viewModel.Employee };
+                ViewBag.TotalFarmers = viewModel.TotalFarmers;
+                ViewBag.TotalProducts = viewModel.TotalProducts;
+                ViewBag.ActiveUsers = viewModel.ActiveUsers;
+                ViewBag.NewFarmers = viewModel.NewFarmers;
+                ViewBag.NewProducts = viewModel.NewProducts;
+                ViewBag.ActivePercentage = viewModel.ActivePercentage;
 
                 return View(viewModel);
             }
@@ -205,28 +121,8 @@ namespace AgriEnergyConnect.Controllers
 
             try
             {
-                // Create user
-                var user = new User
-                {
-                    Username = model.Username,
-                    Email = model.Email,
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    PhoneNumber = model.PhoneNumber,
-                    Role = UserRole.Farmer,
-                    CreatedDate = DateTime.Now,
-                    IsActive = true
-                };
-
-                // Create farmer
-                var farmer = new Farmer
-                {
-                    FarmName = model.FarmName,
-                    Location = model.Location,
-                    User = user
-                };
-
-                await _farmerService.AddFarmerAsync(farmer, model.Password);
+                // Use the service method to create the farmer
+                var farmer = await _farmerService.CreateFarmerFromViewModelAsync(model);
 
                 TempData["SuccessMessage"] = $"Farmer {model.FirstName} {model.LastName} was successfully added.";
                 return RedirectToAction(nameof(Dashboard));
@@ -242,17 +138,45 @@ namespace AgriEnergyConnect.Controllers
         // Parameters:
         //   farmerId - The ID of the farmer whose products are to be displayed.
         [HttpGet]
-        public async Task<IActionResult> ViewFarmerProducts(int farmerId)
+        public async Task<IActionResult> ViewFarmerProducts(int farmerId, string searchTerm = "", string category = "", string statusFilter = "", DateTime? startDate = null, DateTime? endDate = null)
         {
-            var farmer = await _farmerService.GetFarmerByIdAsync(farmerId);
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var user = await _authService.GetUserByIdAsync(userId);
 
-            if (farmer == null)
-                return NotFound();
+                if (user == null)
+                    return NotFound();
 
-            ViewBag.Farmer = farmer;
+                // Set ViewBag employee data
+                ViewBag.Employee = new { User = user };
 
-            var products = await _productService.GetProductsByFarmerIdAsync(farmerId);
-            return View(products);
+                // Get the farmer to display farmer information
+                var farmer = await _farmerService.GetFarmerByIdAsync(farmerId);
+                if (farmer == null)
+                    return NotFound();
+
+                ViewBag.Farmer = farmer;
+
+                // Get filtered products and categories
+                var (products, categories) = await _productService.GetFarmerProductsForViewAsync(
+                    farmerId, searchTerm, category, statusFilter, startDate, endDate);
+
+                // Set ViewBag properties for the view
+                ViewBag.Categories = categories;
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.SelectedCategory = category;
+                ViewBag.SelectedStatus = statusFilter;
+                ViewBag.StartDate = startDate;
+                ViewBag.EndDate = endDate;
+
+                return View(products);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error loading products: {ex.Message}";
+                return View(Enumerable.Empty<ProductDTO>());
+            }
         }
 
         // Filters the products of a specific farmer based on criteria.
@@ -279,189 +203,113 @@ namespace AgriEnergyConnect.Controllers
         [HttpGet]
         public async Task<IActionResult> FarmerDetails(int farmerId)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var user = await _authService.GetUserByIdAsync(userId);
-
-            if (user == null)
-                return NotFound();
-
-            // Set ViewBag employee data
-            ViewBag.Employee = new { User = user };
-
-            var farmerDTO = await _farmerService.GetFarmerDTOByIdAsync(farmerId);
-            if (farmerDTO == null)
-                return NotFound();
-
-            return View(farmerDTO);
-        }
-
-        [HttpGet]
-        [Route("Employee/ViewFarmerProducts/{farmerId}")]
-        public async Task<IActionResult> ViewFarmerProducts(int farmerId, string searchTerm = "", string category = "", string statusFilter = "", DateTime? startDate = null, DateTime? endDate = null)
-        {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var user = await _authService.GetUserByIdAsync(userId);
-
-            if (user == null)
-                return NotFound();
-
-            // Set ViewBag employee data
-            ViewBag.Employee = new { User = user };
-
-            // Get the farmer to display farmer information
-            var farmer = await _farmerService.GetFarmerByIdAsync(farmerId);
-            if (farmer == null)
-                return NotFound();
-
-            ViewBag.Farmer = farmer;
-
-            // Create filter DTO
-            var filter = new ProductFilterDTO
+            try
             {
-                FarmerId = farmerId,
-                SearchTerm = searchTerm,
-                Category = category,
-                StartDate = startDate,
-                EndDate = endDate
-            };
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var user = await _authService.GetUserByIdAsync(userId);
 
-            // Apply active status filter if provided
-            if (!string.IsNullOrEmpty(statusFilter))
-            {
-                if (statusFilter == "active")
-                {
-                    filter.ActiveOnly = true;
-                }
-                else if (statusFilter == "inactive")
-                {
-                    filter.ActiveOnly = false;
-                }
-                // If statusFilter is empty or "all", don't set ActiveOnly (show all)
+                if (user == null)
+                    return NotFound();
+
+                // Set ViewBag employee data
+                ViewBag.Employee = new { User = user };
+
+                // Get detailed farmer information
+                var farmerDTO = await _farmerService.GetFarmerDetailsForViewAsync(farmerId);
+
+                return View(farmerDTO);
             }
-
-            // Get products with filter
-            var products = await _productService.GetFilteredProductDTOsAsync(filter);
-
-            // Get all available categories for this farmer's products
-            var allCategories = products
-                .Select(p => p.Category)
-                .Distinct()
-                .OrderBy(c => c)
-                .ToList();
-
-            ViewBag.Categories = allCategories;
-            ViewBag.SearchTerm = searchTerm;
-            ViewBag.SelectedCategory = category;
-            ViewBag.SelectedStatus = statusFilter;
-            ViewBag.StartDate = startDate;
-            ViewBag.EndDate = endDate;
-
-            return View(products);
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error retrieving farmer details: {ex.Message}";
+                return RedirectToAction("ManageFarmers");
+            }
         }
 
         [HttpGet]
-        [Route("Employee/Products")]
         public async Task<IActionResult> Products(string searchTerm = "", string category = "", string farmerFilter = "", string statusFilter = "", DateTime? startDate = null, DateTime? endDate = null, int page = 1, int pageSize = 10)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var user = await _authService.GetUserByIdAsync(userId);
-
-            if (user == null)
-                return NotFound();
-
-            // Set ViewBag employee data
-            ViewBag.Employee = new { User = user };
-
-            // Get all farmers for the dropdown filter
-            var farmers = await _farmerService.GetAllFarmerSummariesAsync();
-
-            // Create filter DTO (without farmerId to get all products)
-            var filter = new ProductFilterDTO
+            try
             {
-                SearchTerm = searchTerm,
-                Category = category,
-                StartDate = startDate,
-                EndDate = endDate
-            };
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var user = await _authService.GetUserByIdAsync(userId);
 
-            // Apply farmer filter if provided
-            int? farmerIdFilter = null;
-            if (!string.IsNullOrEmpty(farmerFilter) && int.TryParse(farmerFilter, out int parsedId))
-            {
-                farmerIdFilter = parsedId;
-                filter.FarmerId = farmerIdFilter;
+                if (user == null)
+                    return NotFound();
+
+                // Set ViewBag employee data
+                ViewBag.Employee = new { User = user };
+
+                // Get all farmers for the dropdown filter
+                var farmers = await _farmerService.GetAllFarmerSummariesAsync();
+
+                // Get filtered products
+                var (products, categories, totalProducts, totalPages) =
+                    await _productService.GetProductsForAdminViewAsync(
+                        searchTerm, category, farmerFilter, statusFilter,
+                        startDate, endDate, page, pageSize);
+
+                // Pass all necessary data to the view
+                ViewBag.Farmers = farmers;
+                ViewBag.Categories = categories;
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.SelectedCategory = category;
+                ViewBag.SelectedFarmer = farmerFilter;
+                ViewBag.SelectedStatus = statusFilter;
+                ViewBag.StartDate = startDate;
+                ViewBag.EndDate = endDate;
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = totalPages;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalProducts = totalProducts;
+
+                return View(products);
             }
-
-            // Apply active status filter if provided
-            if (!string.IsNullOrEmpty(statusFilter))
+            catch (Exception ex)
             {
-                if (statusFilter == "active")
-                {
-                    filter.ActiveOnly = true;
-                }
-                else if (statusFilter == "inactive")
-                {
-                    filter.ActiveOnly = false;
-                }
-                // If statusFilter is empty or "all", don't set ActiveOnly (show all)
+                TempData["ErrorMessage"] = $"Error loading products: {ex.Message}";
+                return View(new List<ProductDTO>());
             }
-
-            // Get products with filter
-            var allProducts = await _productService.GetFilteredProductDTOsAsync(filter);
-
-            // Get available categories for all products
-            var allCategories = await _productService.GetAllCategoriesAsync();
-
-            // Apply pagination
-            var totalProducts = allProducts.Count();
-            var totalPages = (int)Math.Ceiling(totalProducts / (double)pageSize);
-            var paginatedProducts = allProducts
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            // Pass all necessary data to the view
-            ViewBag.Farmers = farmers;
-            ViewBag.Categories = allCategories;
-            ViewBag.SearchTerm = searchTerm;
-            ViewBag.SelectedCategory = category;
-            ViewBag.SelectedFarmer = farmerFilter;
-            ViewBag.SelectedStatus = statusFilter;
-            ViewBag.StartDate = startDate;
-            ViewBag.EndDate = endDate;
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = totalPages;
-            ViewBag.PageSize = pageSize;
-            ViewBag.TotalProducts = totalProducts;
-
-            return View(paginatedProducts);
         }
 
         // Displays detailed information about a specific product.
         // Parameters:
         //   productId - The ID of the product whose details are to be displayed.
         [HttpGet]
-        [Route("Employee/ProductDetails/{productId}")]
         public async Task<IActionResult> ProductDetails(int productId)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var user = await _authService.GetUserByIdAsync(userId);
+            try
+            {
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var user = await _authService.GetUserByIdAsync(userId);
 
-            if (user == null)
-                return NotFound();
+                if (user == null)
+                    return NotFound();
 
-            // Set ViewBag employee data
-            ViewBag.Employee = new { User = user };
+                // Set ViewBag employee data
+                ViewBag.Employee = new { User = user };
 
-            var productDTO = await _productService.GetProductDTOByIdAsync(productId);
-            if (productDTO == null)
-                return NotFound();
+                // Get product details and associated farmer
+                var (productDTO, farmer) = await _productService.GetProductDetailsForViewAsync(productId);
 
-            // Get the farmer to show navigation breadcrumbs
-            var farmer = await _farmerService.GetFarmerByIdAsync(productDTO.FarmerId);
-            ViewBag.Farmer = farmer;
+                // Set ViewBag.Farmer for navigation breadcrumbs
+                ViewBag.Farmer = farmer;
 
-            return View(productDTO);
+                return View(productDTO);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error retrieving product details: {ex.Message}";
+                return RedirectToAction("Products");
+            }
         }
 
         // Searches for products based on a search term, category, or farmer ID.
@@ -487,118 +335,69 @@ namespace AgriEnergyConnect.Controllers
         [HttpGet]
         public async Task<IActionResult> ManageFarmers(string searchTerm = "", string locationFilter = "", string statusFilter = "", int page = 1, int pageSize = 10)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var user = await _authService.GetUserByIdAsync(userId);
-
-            if (user == null)
-                return NotFound();
-
-            // Set ViewBag employee data
-            ViewBag.Employee = new { User = user };
-
-            // Get all farmers with their complete information
-            var farmers = await _farmerService.GetAllFamersAsync();
-            var farmerList = farmers.ToList();
-
-            // Create farmer summaries with correct IsActive and ProductCount
-            var farmerSummaries = farmerList.Select(farmer => new FarmerSummaryDTO
+            try
             {
-                FarmerId = farmer.FarmerId,
-                FarmName = farmer.FarmName,
-                Location = farmer.Location,
-                OwnerName = farmer.User != null
-                    ? $"{farmer.User.FirstName} {farmer.User.LastName}".Trim()
-                    : "Unknown Farmer",
-                ProductCount = farmer.Products?.Count ?? 0,
-                IsActive = farmer.User?.IsActive ?? false
-            }).ToList();
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var user = await _authService.GetUserByIdAsync(userId);
 
-            // Apply status filter
-            if (!string.IsNullOrEmpty(statusFilter))
-            {
-                if (statusFilter == "active")
-                {
-                    farmerSummaries = farmerSummaries.Where(f => f.IsActive).ToList();
-                }
-                else if (statusFilter == "inactive")
-                {
-                    farmerSummaries = farmerSummaries.Where(f => !f.IsActive).ToList();
-                }
+                if (user == null)
+                    return NotFound();
+
+                // Set ViewBag employee data
+                ViewBag.Employee = new { User = user };
+
+                // Get filtered and paginated farmers
+                var (farmers, totalPages, totalFarmers, uniqueLocations) =
+                    await _farmerService.GetFilteredFarmersAsync(searchTerm, locationFilter, statusFilter, page, pageSize);
+
+                // Set ViewBag data for the view
+                ViewBag.SearchTerm = searchTerm;
+                ViewBag.SelectedLocation = locationFilter;
+                ViewBag.SelectedStatus = statusFilter;
+                ViewBag.UniqueLocations = uniqueLocations;
+                ViewBag.CurrentPage = page;
+                ViewBag.TotalPages = totalPages;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalFarmers = totalFarmers;
+
+                return View(farmers);
             }
-
-            // Apply other filters
-            if (!string.IsNullOrEmpty(searchTerm))
+            catch (Exception ex)
             {
-                farmerSummaries = farmerSummaries.Where(f =>
-                    f.OwnerName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    f.FarmName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                    f.Location.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)
-                ).ToList();
+                TempData["ErrorMessage"] = $"Error loading farmers: {ex.Message}";
+                return View(new List<FarmerSummaryDTO>());
             }
-
-            if (!string.IsNullOrEmpty(locationFilter))
-            {
-                farmerSummaries = farmerSummaries.Where(f =>
-                    f.Location.Equals(locationFilter, StringComparison.OrdinalIgnoreCase)
-                ).ToList();
-            }
-
-            // Get unique locations for the filter dropdown
-            var uniqueLocations = farmerSummaries.Select(f => f.Location)
-                .Distinct()
-                .OrderBy(l => l)
-                .ToList();
-
-            // Implement pagination
-            var totalFarmers = farmerSummaries.Count;
-            var totalPages = (int)Math.Ceiling(totalFarmers / (double)pageSize);
-            var paginatedFarmers = farmerSummaries
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
-            // Set ViewBag data for the view
-            ViewBag.SearchTerm = searchTerm;
-            ViewBag.SelectedLocation = locationFilter;
-            ViewBag.SelectedStatus = statusFilter;
-            ViewBag.UniqueLocations = uniqueLocations;
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = totalPages;
-            ViewBag.PageSize = pageSize;
-            ViewBag.TotalFarmers = totalFarmers;
-
-            return View(paginatedFarmers);
         }
 
         [HttpGet]
         public async Task<IActionResult> EditFarmer(int farmerId)
         {
-            var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-            var user = await _authService.GetUserByIdAsync(userId);
-
-            if (user == null)
-                return NotFound();
-
-            // Set ViewBag employee data
-            ViewBag.Employee = new { User = user };
-
-            var farmer = await _farmerService.GetFarmerByIdAsync(farmerId);
-            if (farmer == null)
-                return NotFound();
-
-            var viewModel = new FarmerViewModel
+            try
             {
-                FarmName = farmer.FarmName,
-                Location = farmer.Location,
-                FirstName = farmer.User.FirstName,
-                LastName = farmer.User.LastName,
-                Email = farmer.User.Email,
-                PhoneNumber = farmer.User.PhoneNumber,
-                Username = farmer.User.Username
-            };
+                var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
+                var user = await _authService.GetUserByIdAsync(userId);
 
-            ViewBag.FarmerId = farmerId;
-            return View(viewModel);
+                if (user == null)
+                    return NotFound();
+
+                // Set ViewBag employee data
+                ViewBag.Employee = new { User = user };
+
+                // Get farmer information for editing
+                var viewModel = await _farmerService.GetFarmerForEditingAsync(farmerId);
+
+                ViewBag.FarmerId = farmerId;
+                return View(viewModel);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error loading farmer data: {ex.Message}";
+                return RedirectToAction("ManageFarmers");
+            }
         }
 
         [HttpPost]
@@ -613,30 +412,15 @@ namespace AgriEnergyConnect.Controllers
 
             try
             {
-                var farmer = await _farmerService.GetFarmerByIdAsync(farmerId);
-                if (farmer == null)
-                    return NotFound();
-
-                // Update farmer information
-                farmer.FarmName = model.FarmName;
-                farmer.Location = model.Location;
-                farmer.User.FirstName = model.FirstName;
-                farmer.User.LastName = model.LastName;
-                farmer.User.Email = model.Email;
-                farmer.User.PhoneNumber = model.PhoneNumber;
-                farmer.User.Username = model.Username;
-
-                // Only update password if a new one is provided
-                if (!string.IsNullOrEmpty(model.Password))
-                {
-                    var hasher = new PasswordHasher<User>();
-                    farmer.User.PasswordHash = hasher.HashPassword(farmer.User, model.Password);
-                }
-
-                await _farmerService.UpdateFarmerAsync(farmer);
+                // Update the farmer using the service method
+                await _farmerService.UpdateFarmerFromViewModelAsync(farmerId, model);
 
                 TempData["SuccessMessage"] = $"Farmer {model.FirstName} {model.LastName} was successfully updated.";
                 return RedirectToAction(nameof(ManageFarmers));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
             }
             catch (Exception ex)
             {
@@ -652,18 +436,17 @@ namespace AgriEnergyConnect.Controllers
         {
             try
             {
+                await _farmerService.DeactivateFarmerAsync(farmerId);
+
+                // Get the farmer name for the success message
                 var farmer = await _farmerService.GetFarmerByIdAsync(farmerId);
-                if (farmer == null)
-                    return NotFound();
+                TempData["SuccessMessage"] = $"Farmer {farmer.User?.FirstName} {farmer.User?.LastName} has been deactivated.";
 
-                // Deactivate the associated user
-                farmer.User.IsActive = false;
-
-                // Update the farmer record
-                await _farmerService.UpdateFarmerAsync(farmer);
-
-                TempData["SuccessMessage"] = $"Farmer {farmer.User.FirstName} {farmer.User.LastName} has been deactivated.";
                 return RedirectToAction(nameof(ManageFarmers));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
             }
             catch (Exception ex)
             {
@@ -678,18 +461,17 @@ namespace AgriEnergyConnect.Controllers
         {
             try
             {
+                await _farmerService.ReactivateFarmerAsync(farmerId);
+
+                // Get the farmer name for the success message
                 var farmer = await _farmerService.GetFarmerByIdAsync(farmerId);
-                if (farmer == null)
-                    return NotFound();
+                TempData["SuccessMessage"] = $"Farmer {farmer.User?.FirstName} {farmer.User?.LastName} has been reactivated.";
 
-                // Reactivate the associated user
-                farmer.User.IsActive = true;
-
-                // Update the farmer record
-                await _farmerService.UpdateFarmerAsync(farmer);
-
-                TempData["SuccessMessage"] = $"Farmer {farmer.User.FirstName} {farmer.User.LastName} has been reactivated.";
                 return RedirectToAction(nameof(ManageFarmers));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
             }
             catch (Exception ex)
             {
@@ -698,24 +480,19 @@ namespace AgriEnergyConnect.Controllers
             }
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [Route("Employee/DeactivateProduct/{productId}")]
-        public async Task<IActionResult> DeactivateProduct(int productId, string returnUrl = null)
+        private async Task<IActionResult> ToggleProductStatus(int productId, Func<int, Task> toggleAction, string successMessage, string errorPrefix, string returnUrl = null)
         {
             try
             {
+                // Get the product name before changing status (for the success message)
                 var product = await _productService.GetProductByIdAsync(productId);
                 if (product == null)
                     return NotFound();
 
-                // Deactivate the product
-                product.IsActive = false;
+                // Apply the toggle action (activate or deactivate)
+                await toggleAction(productId);
 
-                // Update the product
-                await _productService.UpdateProductAsync(product);
-
-                TempData["SuccessMessage"] = $"Product '{product.Name}' has been marked as inactive/out of stock.";
+                TempData["SuccessMessage"] = string.Format(successMessage, product.Name);
 
                 // Redirect back to the referring page if specified
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -724,9 +501,13 @@ namespace AgriEnergyConnect.Controllers
                 // Default redirect to products page
                 return RedirectToAction(nameof(Products));
             }
+            catch (KeyNotFoundException)
+            {
+                return NotFound();
+            }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = $"Error deactivating product: {ex.Message}";
+                TempData["ErrorMessage"] = $"{errorPrefix}: {ex.Message}";
 
                 // Redirect back to the referring page if specified
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -739,41 +520,26 @@ namespace AgriEnergyConnect.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Route("Employee/ActivateProduct/{productId}")]
+        public async Task<IActionResult> DeactivateProduct(int productId, string returnUrl = null)
+        {
+            return await ToggleProductStatus(
+                productId,
+                _productService.DeactivateProductAsync,
+                "Product '{0}' has been marked as out of stock.",
+                "Error deactivating product",
+                returnUrl);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ActivateProduct(int productId, string returnUrl = null)
         {
-            try
-            {
-                var product = await _productService.GetProductByIdAsync(productId);
-                if (product == null)
-                    return NotFound();
-
-                // Activate the product
-                product.IsActive = true;
-
-                // Update the product
-                await _productService.UpdateProductAsync(product);
-
-                TempData["SuccessMessage"] = $"Product '{product.Name}' has been marked as active/in stock.";
-
-                // Redirect back to the referring page if specified
-                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                    return Redirect(returnUrl);
-
-                // Default redirect to products page
-                return RedirectToAction(nameof(Products));
-            }
-            catch (Exception ex)
-            {
-                TempData["ErrorMessage"] = $"Error activating product: {ex.Message}";
-
-                // Redirect back to the referring page if specified
-                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-                    return Redirect(returnUrl);
-
-                // Default redirect to products page
-                return RedirectToAction(nameof(Products));
-            }
+            return await ToggleProductStatus(
+                productId,
+                _productService.ActivateProductAsync,
+                "Product '{0}' has been marked as in stock.",
+                "Error activating product",
+                returnUrl);
         }
     }
 }

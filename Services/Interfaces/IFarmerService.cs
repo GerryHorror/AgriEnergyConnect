@@ -1,5 +1,6 @@
 ﻿using AgriEnergyConnect.DTOs;
 using AgriEnergyConnect.Models;
+using AgriEnergyConnect.Models.ViewModels;
 
 namespace AgriEnergyConnect.Services.Interfaces
 {
@@ -57,5 +58,19 @@ namespace AgriEnergyConnect.Services.Interfaces
         //   id - The ID of the farmer you want to check.
         // Returns true if the farmer exists, or false if they don’t.
         Task<bool> FarmerExistsAsync(int id);
+
+        Task<Farmer> CreateFarmerFromViewModelAsync(FarmerViewModel model);
+
+        Task<(List<FarmerSummaryDTO> Farmers, int TotalPages, int TotalFarmers, List<string> UniqueLocations)> GetFilteredFarmersAsync(string searchTerm, string locationFilter, string statusFilter, int page, int pageSize);
+
+        Task<FarmerDTO> GetFarmerDetailsForViewAsync(int farmerId);
+
+        Task<Farmer> UpdateFarmerFromViewModelAsync(int farmerId, FarmerViewModel model);
+
+        Task<FarmerViewModel> GetFarmerForEditingAsync(int farmerId);
+
+        Task DeactivateFarmerAsync(int farmerId);
+
+        Task ReactivateFarmerAsync(int farmerId);
     }
 }
