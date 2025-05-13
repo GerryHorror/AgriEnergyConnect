@@ -1,8 +1,11 @@
 ﻿using AgriEnergyConnect.Data;
 using AgriEnergyConnect.Models;
+using AgriEnergyConnect.Models.ViewModels;
 using AgriEnergyConnect.Services.Interfaces;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AgriEnergyConnect.Services.Implementation
 {
@@ -97,6 +100,73 @@ namespace AgriEnergyConnect.Services.Implementation
         {
             // Retrieve all users from the database
             return await _context.Users.ToListAsync();
+        }
+
+        public async Task<User> RegisterUserAsync(RegisterViewModel model)
+        {
+            if (model == null)
+                throw new ArgumentNullException(nameof(model));
+
+            // Check if username already exists
+            if (await UsernameExistsAsync(model.Username))
+                throw new InvalidOperationException("Username already exists");
+
+            // Check if email already exists
+            if (await EmailExistsAsync(model.Email))
+                throw new InvalidOperationException("Email already exists");
+
+            // Create the user
+            var user = new User
+            {
+                Username = model.Username,
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Email = model.Email,
+                PhoneNumber = model.PhoneNumber,
+                Role = model.IsFarmer ? UserRole.Farmer : UserRole.Employee,
+                IsActive = true,
+                CreatedDate = DateTime.Now
+            };
+
+            // Hash the password
+            user.PasswordHash = _passwordHasher.HashPassword(user, model.Password);
+
+            // Add user to database
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
+
+            // If registering as a farmer, create farmer entity
+            if (model.IsFarmer)
+            {
+                var farmer = new Farmer
+                {
+                    FarmName = model.FarmName,
+                    Location = model.Location,
+                    UserId = user.UserId,
+                    User = user
+                };
+
+                await _context.Farmers.AddAsync(farmer);
+                await _context.SaveChangesAsync();
+            }
+
+            return user;
+        }
+
+        public ClaimsIdentity CreateUserClaims(User user)
+        {
+            if (user == null)
+                throw new ArgumentNullException(nameof(user));
+
+            // Create claims for the authenticated user
+            var claims = new List<Claim>
+    {
+        new Claim(ClaimTypes.Name, user.Username),
+        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+        new Claim(ClaimTypes.Role, user.Role.ToString()),
+    };
+
+            return new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
         }
     }
 }

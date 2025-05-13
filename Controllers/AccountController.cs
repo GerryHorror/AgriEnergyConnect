@@ -51,39 +51,47 @@ namespace AgriEnergyConnect.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            var user = await _authService.AuthenticateAsync(model.Username, model.Password);
-
-            if (user == null)
+            try
             {
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                // Authenticate the user
+                var user = await _authService.AuthenticateAsync(model.Username, model.Password);
+
+                if (user == null)
+                {
+                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    return View(model);
+                }
+
+                // Create claims identity
+                var claimsIdentity = _authService.CreateUserClaims(user);
+
+                // Setup authentication properties
+                var authProperties = new AuthenticationProperties
+                {
+                    IsPersistent = model.RememberMe,
+                    ExpiresUtc = DateTimeOffset.UtcNow.AddHours(12)
+                };
+
+                // Sign in the user
+                await HttpContext.SignInAsync(
+                    CookieAuthenticationDefaults.AuthenticationScheme,
+                    new ClaimsPrincipal(claimsIdentity),
+                    authProperties);
+
+                // Redirect based on role
+                if (user.Role == UserRole.Farmer)
+                {
+                    return RedirectToAction("Dashboard", "Farmer");
+                }
+                else
+                {
+                    return RedirectToAction("Dashboard", "Employee");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Login error: {ex.Message}");
                 return View(model);
-            }
-
-            // Create claims for the authenticated user
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-                new Claim(ClaimTypes.Role, user.Role.ToString()),
-            };
-
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var authProperties = new AuthenticationProperties
-            {
-                IsPersistent = model.RememberMe,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddHours(12)
-            };
-
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
-
-            // Redirect the user based on their role
-            if (user.Role == UserRole.Farmer)
-            {
-                return RedirectToAction("Dashboard", "Farmer");
-            }
-            else
-            {
-                return RedirectToAction("Dashboard", "Employee");
             }
         }
 
@@ -123,44 +131,22 @@ namespace AgriEnergyConnect.Controllers
 
             try
             {
-                // Create the user
-                var user = new User
-                {
-                    Username = model.Username,
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    Email = model.Email,
-                    PhoneNumber = model.PhoneNumber,
-                    Role = model.IsFarmer ? UserRole.Farmer : UserRole.Employee,
-                    IsActive = true,
-                    CreatedDate = DateTime.Now
-                };
-
-                if (model.IsFarmer)
-                {
-                    // Create the farmer with the associated user
-                    var farmer = new Farmer
-                    {
-                        FarmName = model.FarmName,
-                        Location = model.Location
-                    };
-
-                    await _farmerService.AddFarmerAsync(farmer, model.Password);
-                }
-                else
-                {
-                    // For employees (not supported through public registration)
-                    ModelState.AddModelError(string.Empty, "Employee registration is not supported through public registration");
-                    return View(model);
-                }
+                // Register the user
+                await _authService.RegisterUserAsync(model);
 
                 // Success, redirect to login
                 TempData["SuccessMessage"] = "Registration successful. You can now login.";
                 return RedirectToAction(nameof(Login));
             }
+            catch (InvalidOperationException ex)
+            {
+                // Handle specific exceptions like duplicate username/email
+                ModelState.AddModelError(string.Empty, ex.Message);
+                return View(model);
+            }
             catch (Exception ex)
             {
-                // Handle exceptions (e.g., user already exists)
+                // Handle other exceptions
                 ModelState.AddModelError(string.Empty, $"Registration failed: {ex.Message}");
                 return View(model);
             }
