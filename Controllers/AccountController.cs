@@ -1,9 +1,11 @@
 ﻿using System.Security.Claims;
 using AgriEnergyConnect.Models;
 using AgriEnergyConnect.Models.ViewModels;
+using AgriEnergyConnect.Services.Implementation;
 using AgriEnergyConnect.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AgriEnergyConnect.Controllers
@@ -12,19 +14,25 @@ namespace AgriEnergyConnect.Controllers
     // It provides methods for logging in, logging out, registering, and handling access denial.
     public class AccountController : Controller
     {
-        // Services for authentication and farmer management.
-        private readonly IAuthService _authService;
+        // Services for authentication, farmer management, and registration requests.
 
+        private readonly IAuthService _authService;
         private readonly IFarmerService _farmerService;
+        private readonly IRegistrationRequestService _registrationRequestService;
 
         // Constructor for the AccountController class.
         // Parameters:
         //   authService - The service for managing user authentication.
         //   farmerService - The service for managing farmers.
-        public AccountController(IAuthService authService, IFarmerService farmerService)
+        //   registrationRequestService - The service for managing registration requests.
+        public AccountController(
+            IAuthService authService,
+            IFarmerService farmerService,
+            IRegistrationRequestService registrationRequestService)
         {
             _authService = authService;
             _farmerService = farmerService;
+            _registrationRequestService = registrationRequestService;
         }
 
         // Displays the login page.
@@ -119,6 +127,8 @@ namespace AgriEnergyConnect.Controllers
         }
 
         // Handles the submission of the registration form.
+        // For farmer registrations, creates a registration request for admin approval.
+        // For employee registrations, creates the account directly (if called by an admin).
         // Parameters:
         //   model - The RegisterViewModel containing the user's registration details.
         // Returns a redirect to the login page on success or redisplays the registration form on failure.
@@ -131,12 +141,51 @@ namespace AgriEnergyConnect.Controllers
 
             try
             {
-                // Register the user
-                await _authService.RegisterUserAsync(model);
+                if (model.IsFarmer)
+                {
+                    // For farmers, create a registration request that requires admin approval
+                    if (string.IsNullOrEmpty(model.FarmName) || string.IsNullOrEmpty(model.Location))
+                    {
+                        ModelState.AddModelError(string.Empty, "Farm name and location are required for farmer registration.");
+                        return View(model);
+                    }
 
-                // Success, redirect to login
-                TempData["SuccessMessage"] = "Registration successful. You can now login.";
-                return RedirectToAction(nameof(Login));
+                    // Check if username or email already exists
+                    if (await _authService.UsernameExistsAsync(model.Username))
+                    {
+                        ModelState.AddModelError(string.Empty, "Username already exists. Please choose a different username.");
+                        return View(model);
+                    }
+
+                    if (await _authService.EmailExistsAsync(model.Email))
+                    {
+                        ModelState.AddModelError(string.Empty, "Email already exists. Please use a different email address.");
+                        return View(model);
+                    }
+
+                    // Create a registration request
+                    await _registrationRequestService.CreateRequestFromViewModelAsync(model);
+
+                    // Success, redirect to login with message
+                    TempData["SuccessMessage"] = "Registration request submitted. An administrator will review your application. You will be notified by email when your account is approved.";
+                    return RedirectToAction(nameof(Login));
+                }
+                else
+                {
+                    // For employees, register directly (this should be restricted to admin users in a real app)
+                    if (User.IsInRole("Employee"))
+                    {
+                        await _authService.RegisterUserAsync(model);
+                        TempData["SuccessMessage"] = "Registration successful. The new employee can now login.";
+                        return RedirectToAction(nameof(Login));
+                    }
+                    else
+                    {
+                        // Non-admins cannot create employee accounts
+                        ModelState.AddModelError(string.Empty, "Only existing administrators can create employee accounts.");
+                        return View(model);
+                    }
+                }
             }
             catch (InvalidOperationException ex)
             {
@@ -150,6 +199,87 @@ namespace AgriEnergyConnect.Controllers
                 ModelState.AddModelError(string.Empty, $"Registration failed: {ex.Message}");
                 return View(model);
             }
+        }
+
+        // Displays the list of pending registration requests for admin approval.
+        // This action is restricted to users with the "Employee" role.
+        [HttpGet]
+        [Authorize(Roles = "Employee")]
+        public async Task<IActionResult> RegistrationRequests()
+        {
+            var requests = await _registrationRequestService.GetPendingRequestsAsync();
+            return View(requests);
+        }
+
+        // Approves a registration request and creates a new farmer account.
+        // Parameters:
+        //   requestId - The ID of the registration request to approve.
+        // Returns a redirect to the registration requests page.
+        [HttpPost]
+        [Authorize(Roles = "Employee")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ApproveRequest(int requestId)
+        {
+            try
+            {
+                var user = await _registrationRequestService.ApproveRequestAsync(requestId);
+                TempData["SuccessMessage"] = $"Registration for {user.FirstName} {user.LastName} has been approved. They can now log in to the system.";
+            }
+            catch (KeyNotFoundException)
+            {
+                TempData["ErrorMessage"] = "Registration request not found.";
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error approving registration: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(RegistrationRequests));
+        }
+
+        // Rejects a registration request.
+        // Parameters:
+        //   requestId - The ID of the registration request to reject.
+        //   rejectionReason - The reason for rejecting the request.
+        // Returns a redirect to the registration requests page.
+        [HttpPost]
+        [Authorize(Roles = "Employee")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectRequest(int requestId, string rejectionReason)
+        {
+            if (string.IsNullOrWhiteSpace(rejectionReason))
+            {
+                TempData["ErrorMessage"] = "A reason for rejection is required.";
+                return RedirectToAction(nameof(RegistrationRequests));
+            }
+
+            try
+            {
+                var result = await _registrationRequestService.RejectRequestAsync(requestId, rejectionReason);
+
+                if (result)
+                {
+                    TempData["SuccessMessage"] = "Registration request has been rejected. The applicant will be notified.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Registration request not found.";
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                TempData["ErrorMessage"] = ex.Message;
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error rejecting registration: {ex.Message}";
+            }
+
+            return RedirectToAction(nameof(RegistrationRequests));
         }
     }
 }

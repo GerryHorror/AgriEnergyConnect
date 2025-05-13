@@ -1,0 +1,51 @@
+﻿@model IEnumerable<AgriEnergyConnect.DTOs.MessageSummaryDTO>
+
+@if (Model != null && Model.Any())
+{
+    @foreach (var message in Model)
+    {
+        <a href="@Url.Action("View", "Message", new { id = message.MessageId })" class="message-row">
+            <div class="message-icon">
+                <i class="fa fa-paper-plane"></i>
+            </div>
+            <div class="message-content">
+                <div class="message-subject">@message.Subject</div>
+                <div class="message-meta">
+                    <div class="message-sender">To: @message.RecipientName</div>
+                </div>
+            </div>
+            <div class="message-time">
+                @FormatDate(message.SentDate)
+            </div>
+        </a>
+    }
+}
+else
+{
+    <div class="empty-messages">
+        <i class="fa fa-paper-plane"></i>
+        <h5>No sent messages</h5>
+        <p>You haven't sent any messages yet</p>
+    </div>
+}
+
+@functions {
+    public string FormatDate(DateTime date)
+    {
+        var now = DateTime.Now;
+        var diff = now - date;
+
+        if (diff.TotalHours < 24 && date.Date == now.Date)
+        {
+            return date.ToString("h:mm tt");
+        }
+        else if (diff.TotalDays < 7)
+        {
+            return date.ToString("ddd h:mm tt");
+        }
+        else
+        {
+            return date.ToString("MMM d, yyyy");
+        }
+    }
+}

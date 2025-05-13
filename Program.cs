@@ -32,6 +32,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddScoped<IFarmerRepository, FarmerRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IRegistrationRequestRepository, RegistrationRequestRepository>();
 
 // Register services
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -40,6 +41,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IMessageService, MessageService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IFarmerDashboardService, FarmerDashboardService>();
+builder.Services.AddScoped<IRegistrationRequestService, RegistrationRequestService>();
 
 // Session configuration (if needed)
 builder.Services.AddSession(options =>

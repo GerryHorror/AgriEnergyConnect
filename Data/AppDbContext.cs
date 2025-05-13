@@ -29,6 +29,10 @@ namespace AgriEnergyConnect.Data
         // This provides access to the Message entities.
         public DbSet<Message> Messages { get; set; }
 
+        // DbSet representing the RegistrationRequests table in the database.
+        // This provides access to the RegistrationRequest entities.
+        public DbSet<RegistrationRequest> RegistrationRequests { get; set; }
+
         // Configures the model and relationships between entities.
         // This method is called when the model is being created.
         protected override void OnModelCreating(ModelBuilder modelBuilder)

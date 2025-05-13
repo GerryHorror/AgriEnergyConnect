@@ -1,5 +1,316 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@model IEnumerable<AgriEnergyConnect.DTOs.MessageSummaryDTO>
 @{
+    ViewData["Title"] = "Inbox";
+    Layout = User.IsInRole("Employee") ? "_EmployeeLayout" : "_FarmerLayout";
+    var isEmployee = User.IsInRole("Employee");
+}
+
+@section Styles {
+    <style>
+        .messages-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .messages-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .messages-tabs {
+            display: flex;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+        }
+
+        .message-tab {
+            padding: 10px 20px;
+            font-weight: 500;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+            .message-tab.active {
+                color: #4CAF50;
+                border-bottom-color: #4CAF50;
+            }
+
+        .message-row {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background-color 0.2s;
+        }
+
+            .message-row:hover {
+                background-color: #f9f9f9;
+            }
+
+            .message-row.unread {
+                background-color: #f0f8ff;
+            }
+
+                .message-row.unread:hover {
+                    background-color: #e6f2ff;
+                }
+
+        .message-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+
+            .message-icon.unread {
+                background-color: #e6f2ff;
+                color: #4CAF50;
+            }
+
+        .message-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .message-subject {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 3px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .message-meta {
+            display: flex;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .message-sender {
+            margin-right: 15px;
+        }
+
+        .message-time {
+            margin-left: auto;
+            flex-shrink: 0;
+            font-size: 12px;
+            color: #888;
+        }
+
+        .message-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #4CAF50;
+            margin-right: 10px;
+            flex-shrink: 0;
+        }
+
+        .empty-messages {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+
+            .empty-messages i {
+                font-size: 48px;
+                margin-bottom: 15px;
+                color: #ddd;
+            }
+
+        .employee-body .message-tab.active {
+            color: #00897B;
+            border-bottom-color: #00897B;
+        }
+
+        .employee-body .message-indicator {
+            background-color: #00897B;
+        }
+
+        .compose-btn {
+            background-color: #4CAF50;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 4px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            transition: background-color 0.3s;
+        }
+
+            .compose-btn i {
+                margin-right: 8px;
+            }
+
+            .compose-btn:hover {
+                background-color: #388E3C;
+                color: white;
+                text-decoration: none;
+            }
+
+        .employee-body .compose-btn {
+            background-color: #00897B;
+        }
+
+            .employee-body .compose-btn:hover {
+                background-color: #00796B;
+            }
+
+        @@media (max-width: 768px) {
+            .message-meta
+
+        {
+            flex-direction: column;
+        }
+
+        .message-time {
+            margin-left: 0;
+            margin-top: 5px;
+        }
+
+        }
+    </style>
+}
+
+<div class="@(isEmployee ? "dashboard-content" : "content-wrapper")">
+    <div class="page-header">
+        <div class="title-section">
+            <h1>Messages</h1>
+            <p>Manage your communications with farmers and administrators</p>
+        </div>
+    </div>
+
+    <div class="messages-container">
+        <div class="messages-header">
+            <div class="messages-tabs">
+                <div class="message-tab active" id="inbox-tab">Inbox</div>
+                @if (isEmployee)
+                {
+                    <div class="message-tab" id="sent-tab">Sent</div>
+                }
+            </div>
+            @if (isEmployee)
+            {
+                <a asp-action="Send" asp-controller="Message" class="compose-btn">
+                    <i class="fa fa-pen"></i> Compose
+                </a>
+            }
+        </div>
+
+        <div id="inbox-content">
+            @if (Model != null && Model.Any())
+            {
+                @foreach (var message in Model)
+                {
+                    <a href="@Url.Action("View", "Message", new { id = message.MessageId })" class="message-row @(!message.IsRead ? "unread" : "")">
+                        @if (!message.IsRead)
+                        {
+                            <div class="message-indicator"></div>
+                        }
+                        <div class="message-icon @(!message.IsRead ? "unread" : "")">
+                            <i class="fa fa-envelope@(message.IsRead ? "-open" : "")"></i>
+                        </div>
+                        <div class="message-content">
+                            <div class="message-subject">@message.Subject</div>
+                            <div class="message-meta">
+                                <div class="message-sender">From: @message.SenderName</div>
+                            </div>
+                        </div>
+                        <div class="message-time">
+                            @FormatDate(message.SentDate)
+                        </div>
+                    </a>
+                }
+            }
+            else
+            {
+                <div class="empty-messages">
+                    <i class="fa fa-inbox"></i>
+                    <h5>Your inbox is empty</h5>
+                    <p>No messages to display</p>
+                </div>
+            }
+        </div>
+
+        @if (isEmployee)
+        {
+            <div id="sent-content" style="display: none;">
+                <!-- This will be loaded via AJAX -->
+                <div class="text-center py-4">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Tab switching functionality
+            $('#inbox-tab').click(function() {
+                $(this).addClass('active');
+                $('#sent-tab').removeClass('active');
+                $('#inbox-content').show();
+                $('#sent-content').hide();
+            });
+
+            $('#sent-tab').click(function() {
+                $(this).addClass('active');
+                $('#inbox-tab').removeClass('active');
+                $('#inbox-content').hide();
+                $('#sent-content').show();
+
+                // Load sent messages via AJAX if needed
+                if (!$('#sent-content').data('loaded')) {
+                    $.ajax({
+                        url: '@Url.Action("SentMessages", "Message")',
+                        type: 'GET',
+                        success: function(data) {
+                            $('#sent-content').html(data).data('loaded', true);
+                        },
+                        error: function() {
+                            $('#sent-content').html('<div class="empty-messages"><i class="fa fa-paper-plane"></i><h5>Error loading messages</h5><p>Please try again later</p></div>');
+                        }
+                    });
+                }
+            });
+        });
+    </script>
+}
+
+@functions {
+    public string FormatDate(DateTime date)
+    {
+        var now = DateTime.Now;
+        var diff = now - date;
+
+        if (diff.TotalHours < 24 && date.Date == now.Date)
+        {
+            return date.ToString("h:mm tt");
+        }
+        else if (diff.TotalDays < 7)
+        {
+            return date.ToString("ddd h:mm tt");
+        }
+        else
+        {
+            return date.ToString("MMM d, yyyy");
+        }
+    }
 }
