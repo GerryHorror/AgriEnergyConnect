@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<AgriEnergyConnect.Models.Product>
+@using AgriEnergyConnect.Helpers
 @{
     ViewData["Title"] = "Farmer Dashboard";
     Layout = "_FarmerLayout";
@@ -57,7 +58,7 @@
                 {
                     @foreach (var category in ViewBag.CategoryList)
                     {
-                        <span class="category-pill" style="background-color: @GetCategoryColor(category)">@category</span>
+                        <span class="category-pill" style="background-color: @CategoryHelper.GetCategoryColor(category)">@category</span>
                     }
                 }
             </div>
@@ -114,10 +115,10 @@
                     <span class="input-icon">≡</span>
                     <select id="Category" name="Category" class="form-control" required>
                         <option value="">Select category</option>
-                        <option value="Grains">Grains</option>
-                        <option value="Vegetables">Vegetables</option>
-                        <option value="Dairy">Dairy</option>
-                        <option value="Organic">Organic</option>
+                        @foreach (var category in CategoryHelper.Categories)
+                        {
+                            <option value="@category.Name">@category.Name</option>
+                        }
                     </select>
                 </div>
             </div>
@@ -147,25 +148,6 @@
         </div>
     </form>
 </div>
-
-@functions {
-    private string GetCategoryColor(string category)
-    {
-        switch (category.ToLower())
-        {
-            case "organic":
-                return "#E8F5E9";
-            case "dairy":
-                return "#FFF3E0";
-            case "grains":
-                return "#E1F5FE";
-            case "vegetables":
-                return "#F1F8E9";
-            default:
-                return "#F5F5F5";
-        }
-    }
-}
 
 @section Scripts {
     <style>
