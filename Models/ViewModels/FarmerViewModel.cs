@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using AgriEnergyConnect.Validation;
+using System.ComponentModel.DataAnnotations;
 
 namespace AgriEnergyConnect.Models.ViewModels
 {
@@ -60,9 +61,8 @@ namespace AgriEnergyConnect.Models.ViewModels
         public string Username { get; set; }
 
         // The password for the farmer's account.
-        // This is a required field with a minimum length of 6 characters.
-        // Validation ensures that the password is provided and meets the length requirements.
-        [Required(ErrorMessage = "Password is required")]
+        // Only required during registration, not when editing.
+        [RequiredForRegistration(ContextKey = "FormContext")]
         [StringLength(100, ErrorMessage = "The {0} must be at least {2} characters long.", MinimumLength = 6)]
         [DataType(DataType.Password)]
         [Display(Name = "Password")]

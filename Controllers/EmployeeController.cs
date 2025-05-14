@@ -387,6 +387,7 @@ namespace AgriEnergyConnect.Controllers
                 var viewModel = await _farmerService.GetFarmerForEditingAsync(farmerId);
 
                 ViewBag.FarmerId = farmerId;
+                ViewData["FormContext"] = "Edit";
                 return View(viewModel);
             }
             catch (KeyNotFoundException)
@@ -404,6 +405,7 @@ namespace AgriEnergyConnect.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditFarmer(int farmerId, FarmerViewModel model)
         {
+            ViewData["FormContext"] = "Edit";
             if (!ModelState.IsValid)
             {
                 ViewBag.FarmerId = farmerId;

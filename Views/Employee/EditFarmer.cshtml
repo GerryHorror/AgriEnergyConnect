@@ -13,7 +13,7 @@
     <!-- Page Header -->
     <div class="page-header">
         <div class="title-section">
-            <h1>Edit Farmer</h1>
+            <h1 class="employee-title">Edit Farmer</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb mb-0">
                     <li class="breadcrumb-item"><a href="@Url.Action("Dashboard")">Dashboard</a></li>
@@ -159,12 +159,13 @@
                     <div class="col-md-6">
                         <label asp-for="Password" class="form-label">
                             New Password (leave blank to keep current)
+                            <i class="fa fa-info-circle text-muted ms-1" data-bs-toggle="tooltip" title="Leave blank to keep the current password. Minimum 6 characters for a new password."></i>
                         </label>
                         <div class="input-group">
                             <span class="input-group-text">
                                 <i class="fa fa-lock"></i>
                             </span>
-                            <input asp-for="Password" type="password" class="form-control" />
+                            <input asp-for="Password" type="password" class="form-control" id="PasswordField" />
                         </div>
                         <span asp-validation-for="Password" class="text-danger small"></span>
                         <div class="form-text">
@@ -237,12 +238,37 @@
         }
 </style>
 
+<!-- Confirmation Modal for Password Change -->
+<div class="modal fade" id="passwordConfirmModal" tabindex="-1" aria-labelledby="passwordConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="passwordConfirmLabel">Confirm Password Change</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>You have entered a new password for this farmer. Are you sure you want to update their password?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmPasswordChangeBtn">Yes, Update Password</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
     <script>
+        // Enable tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+
         // Add interactive behavior to the form
         document.addEventListener('DOMContentLoaded', function() {
             // Focus on first name field when page loads
@@ -276,6 +302,22 @@
             // Remove beforeunload when form is submitted
             form.addEventListener('submit', function() {
                 window.removeEventListener('beforeunload', function(){});
+            });
+
+            // Password change confirmation modal
+            form.addEventListener('submit', function(e) {
+                var passwordField = document.getElementById('PasswordField');
+                if (passwordField && passwordField.value.trim().length > 0 && !form.dataset.passwordConfirmed) {
+                    e.preventDefault();
+                    var modal = new bootstrap.Modal(document.getElementById('passwordConfirmModal'));
+                    modal.show();
+                }
+            });
+
+            document.getElementById('confirmPasswordChangeBtn').addEventListener('click', function() {
+                var form = document.querySelector('form');
+                form.dataset.passwordConfirmed = 'true';
+                form.submit();
             });
         });
     </script>
