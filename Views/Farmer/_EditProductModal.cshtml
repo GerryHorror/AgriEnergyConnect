@@ -1,4 +1,5 @@
 ﻿@model AgriEnergyConnect.Models.ViewModels.ProductViewModel
+@using AgriEnergyConnect.Helpers
 
 <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -27,10 +28,11 @@
                             <div class="input-with-icon">
                                 <span class="input-icon">≡</span>
                                 <select asp-for="Category" class="form-select">
-                                    <option value="Grains">Grains</option>
-                                    <option value="Vegetables">Vegetables</option>
-                                    <option value="Dairy">Dairy</option>
-                                    <option value="Organic">Organic</option>
+                                    <option value="">Select category</option>
+                                    @foreach (var category in CategoryHelper.Categories)
+                                    {
+                                        <option value="@category.Name">@category.Name</option>
+                                    }
                                 </select>
                             </div>
                             <span asp-validation-for="Category" class="text-danger small"></span>

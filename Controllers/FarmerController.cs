@@ -152,7 +152,7 @@ namespace AgriEnergyConnect.Controllers
                 // Create product using service method
                 await _productService.CreateProductFromViewModelAsync(model, farmer.FarmerId);
 
-                TempData["SuccessMessage"] = $"Product '{model.Name}' was added successfully.";
+                TempData["ProductSuccessMessage"] = $"Product '{model.Name}' was added successfully.";
                 return RedirectToAction(nameof(Products));
             }
             catch (Exception ex)
@@ -216,7 +216,7 @@ namespace AgriEnergyConnect.Controllers
                 // Update product using service method
                 await _productService.UpdateProductFromViewModelAsync(model, farmer.FarmerId);
 
-                TempData["SuccessMessage"] = $"Product '{model.Name}' was updated successfully.";
+                TempData["ProductSuccessMessage"] = $"Product '{model.Name}' was updated successfully.";
                 return RedirectToAction(nameof(Products));
             }
             catch (KeyNotFoundException)

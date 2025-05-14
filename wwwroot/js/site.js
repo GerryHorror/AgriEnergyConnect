@@ -2,6 +2,7 @@
 
 // Ensure the DOM is fully loaded before executing any of this
 document.addEventListener('DOMContentLoaded', function () {
+    let currentModal = null;
 
     // Attach a single click listener to the body – useful for dynamic content like modal buttons
     document.body.addEventListener('click', function (e) {
@@ -13,13 +14,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const productId = editBtn.getAttribute('data-edit-product-id');
         console.log('Trying to edit product with ID:', productId);
 
-        // Before loading a new modal, clean up any that are already open
-        const existingModals = document.querySelectorAll('.modal');
-        existingModals.forEach(modal => {
-            const bsModalInstance = bootstrap.Modal.getInstance(modal);
-            if (bsModalInstance) bsModalInstance.dispose();
-            modal.remove();
-        });
+        // Clean up any existing modal
+        if (currentModal) {
+            const bsModalInstance = bootstrap.Modal.getInstance(currentModal);
+            if (bsModalInstance) {
+                bsModalInstance.dispose();
+            }
+            currentModal.remove();
+            currentModal = null;
+        }
 
         // Go fetch the modal HTML via AJAX (server returns partial view)
         fetch(`/Farmer/GetEditProductModal/${productId}`, {
@@ -42,7 +45,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Add modal to DOM and trigger Bootstrap
                 document.body.appendChild(modalEl);
-                modalEl.offsetHeight; // trigger reflow
+                currentModal = modalEl;
+
                 const bsModal = new bootstrap.Modal(modalEl, {
                     backdrop: true,
                     keyboard: true,
@@ -57,6 +61,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
                 // Allow dragging the modal
                 makeModalDraggable(modalEl);
+
+                // Handle modal cleanup after it's hidden
+                modalEl.addEventListener('hidden.bs.modal', function handler() {
+                    bsModal.dispose();
+                    modalEl.remove();
+                    currentModal = null;
+                    modalEl.removeEventListener('hidden.bs.modal', handler);
+                }, { once: true });
             })
             .catch(error => {
                 console.error('Failed to load edit modal:', error);
@@ -87,13 +99,6 @@ document.addEventListener('DOMContentLoaded', function () {
                 })
                 .then(() => {
                     bsModal.hide();
-
-                    // Clean up modal from DOM
-                    modalEl.addEventListener('hidden.bs.modal', () => {
-                        bsModal.dispose();
-                        modalEl.remove();
-                    });
-
                     // Show success toast – nice and subtle
                     showToast('✅ Product updated successfully!');
 
@@ -127,6 +132,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         let isDragging = false;
         let offsetX = 0, offsetY = 0;
+        let hasBeenMoved = false;
+
+        // Store initial position
+        const initialPosition = {
+            top: dialog.getBoundingClientRect().top,
+            left: dialog.getBoundingClientRect().left
+        };
 
         header.style.cursor = 'move';
 
@@ -141,6 +153,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.addEventListener('mousemove', function (e) {
             if (!isDragging) return;
+            hasBeenMoved = true;
             dialog.style.top = `${e.clientY - offsetY}px`;
             dialog.style.left = `${e.clientX - offsetX}px`;
             dialog.style.margin = '0';
@@ -148,6 +161,16 @@ document.addEventListener('DOMContentLoaded', function () {
 
         document.addEventListener('mouseup', function () {
             isDragging = false;
+        });
+
+        // Reset position if modal hasn't been moved
+        modal.addEventListener('hidden.bs.modal', function () {
+            if (!hasBeenMoved) {
+                dialog.style.position = '';
+                dialog.style.top = '';
+                dialog.style.left = '';
+                dialog.style.margin = '';
+            }
         });
     }
 });

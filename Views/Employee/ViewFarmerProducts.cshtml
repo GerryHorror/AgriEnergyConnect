@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<AgriEnergyConnect.DTOs.ProductDTO>
+@using AgriEnergyConnect.Helpers
 
 @{
     ViewData["Title"] = "Farmer Products";
@@ -107,9 +108,9 @@
                         </span>
                         <select class="form-select" id="category" name="category">
                             <option value="">All Categories</option>
-                            @foreach (var category in ViewBag.Categories ?? new List<string>())
+                            @foreach (var category in CategoryHelper.Categories)
                             {
-                                <option value="@category" selected="@(ViewBag.SelectedCategory == category)">@category</option>
+                                <option value="@category.Name" selected="@(ViewBag.SelectedCategory == category.Name)">@category.Name</option>
                             }
                         </select>
                     </div>
@@ -201,7 +202,7 @@
                                         <strong>@product.Name</strong>
                                     </td>
                                     <td>
-                                        <span class="badge product-category-badge @GetCategoryClass(product.Category)">
+                                        <span class="badge product-category-badge" style="background-color: @CategoryHelper.GetCategoryColor(product.Category); color: #333;">
                                             @product.Category
                                         </span>
                                     </td>
@@ -371,17 +372,5 @@
         var lastInitial = !string.IsNullOrEmpty(lastName) ? lastName[0].ToString() : "";
 
         return $"{firstInitial}{lastInitial}".ToUpper();
-    }
-
-    private string GetCategoryClass(string category)
-    {
-        return category?.ToLower() switch
-        {
-            "organic" => "category-organic",
-            "dairy" => "category-dairy",
-            "grains" => "category-grains",
-            "vegetables" => "category-vegetables",
-            _ => ""
-        };
     }
 }
