@@ -1,0 +1,29 @@
+﻿@{
+    ViewData["Title"] = "Access Denied";
+    Layout = "_AuthLayout";
+}
+
+<div class="login-container">
+    <div class="login-header">
+        <div class="app-logo">
+            <!-- Application logo SVG -->
+            <svg width="80" height="60" viewBox="0 0 80 60">
+                <path d="M10,20 Q25,10 40,20 T70,20" stroke="#4CAF50" stroke-width="3" fill="none" />
+                <path d="M0,30 Q20,15 40,30 T80,30" stroke="#4CAF50" stroke-width="3" fill="none" />
+                <path d="M10,40 Q25,30 40,40 T70,40" stroke="#4CAF50" stroke-width="3" fill="none" />
+            </svg>
+        </div>
+        <h1 class="app-title">Agri-Energy Connect</h1>
+        <p class="app-subtitle">Sustainable Farming • Green Energy • Innovation</p>
+    </div>
+
+    <div class="login-card">
+        <h2 style="color: #c62828; margin-bottom: 16px;">Access Denied</h2>
+        <p class="card-subtitle" style="margin-bottom: 32px; color: #444;">
+            You do not have permission to access this page.
+        </p>
+        <a href="~/Account/Login" class="btn-login" style="margin-top: 12px; display: inline-block;">
+            Return to Login
+        </a>
+    </div>
+</div>
