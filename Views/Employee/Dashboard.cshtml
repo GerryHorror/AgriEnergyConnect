@@ -127,7 +127,25 @@
     <!-- Quick Action Buttons -->
     <div class="quick-actions">
         <a asp-action="AddFarmer" asp-controller="Employee" class="btn btn-primary">Add Farmer</a>
-        <a href="@Url.Action("GenerateReport", "Employee")" class="btn btn-outline">Generate Report</a>
+        <button type="button" class="btn btn-outline" data-bs-toggle="modal" data-bs-target="#comingSoonModal">Generate Report</button>
+    </div>
+</div>
+
+<!-- Feature Coming Soon Modal -->
+<div class="modal fade" id="comingSoonModal" tabindex="-1" aria-labelledby="comingSoonLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="comingSoonLabel">Feature Coming Soon</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>This feature is coming soon. Stay tuned for updates!</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
     </div>
 </div>
 
