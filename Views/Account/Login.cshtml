@@ -107,6 +107,30 @@
                 <a href="#" class="forgot-password">Forgot Password?</a>
             </div>
 
+            <!-- Spinner shown during login submission -->
+            <div id="login-spinner" class="login-spinner" style="display:none;">
+                <svg class="spinner-svg" viewBox="0 0 50 50">
+                    <!-- Spinner circles -->
+                    <circle class="spinner-path-green" cx="25" cy="25" r="20" fill="none" stroke-width="5" />
+                    <circle class="spinner-path-teal" cx="25" cy="25" r="20" fill="none" stroke-width="5" />
+                    <!-- Soil/seed -->
+                    <ellipse cx="25" cy="38" rx="5" ry="2" fill="#795548" opacity="0.5" />
+                    <!-- Sprout stem (animated) -->
+                    <rect x="24" y="30" width="2" height="8" rx="1" fill="#4CAF50">
+                        <animate attributeName="height" from="0" to="8" dur="0.7s" begin="0.2s" fill="freeze" />
+                        <animate attributeName="y" from="38" to="30" dur="0.7s" begin="0.2s" fill="freeze" />
+                    </rect>
+                    <!-- Left leaf (animated) -->
+                    <ellipse cx="23" cy="30" rx="0" ry="1.2" fill="#8BC34A">
+                        <animate attributeName="rx" from="0" to="2.2" dur="0.5s" begin="0.7s" fill="freeze" />
+                    </ellipse>
+                    <!-- Right leaf (animated) -->
+                    <ellipse cx="27" cy="30" rx="0" ry="1.2" fill="#43A047">
+                        <animate attributeName="rx" from="0" to="2.2" dur="0.5s" begin="0.7s" fill="freeze" />
+                    </ellipse>
+                </svg>
+            </div>
+
             <!-- Submit Button -->
             <!-- Submits the login form. -->
             <button type="submit" class="btn-login">Sign In</button>
@@ -162,6 +186,12 @@
                 icon.classList.add('fas');
             }
         }
+
+        // Show spinner and disable button on form submit
+        $('.login-form').on('submit', function() {
+            $('#login-spinner').show();
+            $('.btn-login').prop('disabled', true);
+        });
     </script>
 
     @{

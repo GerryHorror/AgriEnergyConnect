@@ -428,3 +428,73 @@ body.employee-role.auth-body {
     .toggle-password:hover {
         color: #4CAF50;
     }
+
+.login-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 16px;
+    min-height: 40px;
+}
+
+.spinner-svg {
+    width: 40px;
+    height: 40px;
+    animation: spinner-rotate 1s linear infinite;
+}
+
+.spinner-path-green {
+    stroke: #4CAF50;
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: 0;
+    stroke-linecap: round;
+    animation: spinner-dash-green 1.5s ease-in-out infinite;
+}
+
+.spinner-path-teal {
+    stroke: #00897B;
+    stroke-dasharray: 60, 150;
+    stroke-dashoffset: 60;
+    stroke-linecap: round;
+    animation: spinner-dash-teal 1.5s ease-in-out infinite;
+}
+
+@keyframes spinner-rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spinner-dash-green {
+    0% {
+        stroke-dasharray: 1, 150;
+        stroke-dashoffset: 0;
+    }
+
+    50% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -35;
+    }
+
+    100% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -124;
+    }
+}
+
+@keyframes spinner-dash-teal {
+    0% {
+        stroke-dasharray: 1, 150;
+        stroke-dashoffset: 60;
+    }
+
+    50% {
+        stroke-dasharray: 60, 150;
+        stroke-dashoffset: 25;
+    }
+
+    100% {
+        stroke-dasharray: 60, 150;
+        stroke-dashoffset: -94;
+    }
+}
