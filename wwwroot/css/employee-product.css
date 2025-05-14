@@ -349,26 +349,138 @@
 
 /* Print Styles */
 @media print {
+    /* Hide non-printable elements */
     .page-header,
-    .filter-section,
-    .actions-card,
+    .card-header,
+    .btn-group,
+    .input-group,
+    .form-control,
+    .form-select,
     .btn,
-    .action-button {
-        display: none;
+    .collapse,
+    .breadcrumb,
+    .farmer-avatar-medium {
+        display: none !important;
     }
 
-    .farmer-info-card {
+    /* Reset card styles for print */
+    .card {
+        border: none !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .card-body {
+        padding: 0 !important;
+    }
+
+    /* Add print header */
+    .dashboard-content::before {
+        content: "Farmer Products Report";
+        display: block;
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    /* Add farmer info for print */
+    .dashboard-content::after {
+        content: "Farmer: " attr(data-farmer-name) "\A Location: " attr(data-farmer-location) "\A Generated: " attr(data-print-date);
+        display: block;
+        white-space: pre-line;
+        margin: 20px 0;
+        padding: 10px;
+        border: 1px solid #ddd;
+        font-size: 14px;
+    }
+
+    /* Improve table print layout */
+    .table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+    }
+
+        .table th,
+        .table td {
+            padding: 8px !important;
+            border: 1px solid #ddd !important;
+            background-color: #fff !important;
+            color: #000 !important;
+        }
+
+        .table th {
+            background-color: #f8f9fa !important;
+            font-weight: bold !important;
+        }
+
+    /* Style badges for print */
+    .badge {
+        border: 1px solid #ddd !important;
+        padding: 4px 8px !important;
+        font-weight: normal !important;
+    }
+
+        .badge.bg-success {
+            background-color: #fff !important;
+            color: #000 !important;
+            border-color: #28a745 !important;
+        }
+
+        .badge.bg-secondary {
+            background-color: #fff !important;
+            color: #000 !important;
+            border-color: #6c757d !important;
+        }
+
+        .badge.bg-info {
+            background-color: #fff !important;
+            color: #000 !important;
+            border-color: #17a2b8 !important;
+        }
+
+    /* Add page breaks */
+    .table {
+        page-break-inside: auto;
+    }
+
+    tr {
         page-break-inside: avoid;
+        page-break-after: auto;
     }
 
-    .product-detail-card {
-        box-shadow: none;
-        border: 1px solid #eee;
+    /* Add page numbers */
+    @page {
+        margin: 2cm;
+
+        @bottom-center {
+            content: counter(page);
+        }
     }
 
-    body {
-        background: white;
+    @page :first {
+        margin-top: 3cm;
     }
+
+    /* Add page counter */
+    .dashboard-content {
+        counter-reset: page;
+    }
+
+    .table {
+        counter-increment: page;
+    }
+
+        /* Add page number to each page */
+        .table::after {
+            content: "Page " counter(page);
+            display: block;
+            text-align: center;
+            margin-top: 1cm;
+            font-size: 12px;
+            color: #666;
+        }
 }
 
 /* Responsive Adjustments */
