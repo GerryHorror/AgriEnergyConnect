@@ -10,6 +10,23 @@
     <link rel="stylesheet" href="~/css/farmer-dashboard.css" />
     <link rel="stylesheet" href="~/css/farmer-myproduct.css" />
     @RenderSection("Styles", required: false)
+    <style>
+        .farmer-modal-header {
+            background-color: #4CAF50 !important;
+        }
+
+        .farmer-btn {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+        }
+
+            .farmer-btn:hover, .farmer-btn:focus {
+                background-color: #388E3C;
+                color: #fff;
+            }
+    </style>
+
 </head>
 <body class="farmer-body">
     <header class="farmer-header">
@@ -32,7 +49,7 @@
                     Messages
                     @await Component.InvokeAsync("UnreadMessageCount")
                 </a>
-                <a asp-action="Profile" asp-controller="Farmer" class="nav-link @(ViewContext.RouteData.Values["Action"].ToString() == "Profile" ? "active" : "")">Profile</a>
+                <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#comingSoonModal">Profile</a>
                 <a href="javascript:document.getElementById('logoutForm').submit();" class="nav-link logout">Logout</a>
             </nav>
         </div>
@@ -70,6 +87,23 @@
                     Product updated successfully.
                 </div>
                 <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+    <!-- Coming Soon Modal -->
+    <div class="modal fade" id="comingSoonModal" tabindex="-1" aria-labelledby="comingSoonModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header farmer-modal-header text-white">
+                    <h5 class="modal-title" id="comingSoonModalLabel">Coming Soon</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    The profile feature is coming soon. Stay tuned!
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn farmer-btn" data-bs-dismiss="modal">OK</button>
+                </div>
             </div>
         </div>
     </div>

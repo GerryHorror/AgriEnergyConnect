@@ -85,13 +85,13 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Reports" ? "active" : "")">
+                    <a href="#" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Reports" ? "active" : "")" data-bs-toggle="modal" data-bs-target="#comingSoonModal">
                         <span class="nav-icon"><i class="fa fa-chart-bar"></i></span> Reports
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="@(ViewContext.RouteData.Values["Action"].ToString() == "Settings" ? "active" : "")">
-                        <span class="nav-icon"><i class="fa fa-cog"></i></span> Settings
+                    <a href="#" onclick="document.getElementById('logoutForm').submit(); return false;">
+                        <span class="nav-icon"><i class="fa fa-sign-out-alt"></i></span> Logout
                     </a>
                 </li>
             </ul>
@@ -107,6 +107,24 @@
     <form id="logoutForm" asp-action="Logout" asp-controller="Account" method="post" style="display: none;">
         @Html.AntiForgeryToken()
     </form>
+
+    <!-- Feature Coming Soon Modal -->
+    <div class="modal fade" id="comingSoonModal" tabindex="-1" aria-labelledby="comingSoonLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="comingSoonLabel">Feature Coming Soon</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>This feature is coming soon. Stay tuned for updates!</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

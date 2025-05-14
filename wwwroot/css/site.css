@@ -60,3 +60,8 @@ body {
         opacity: 1;
     }
 }
+
+.employee-title {
+    color: #00897B;
+    font-weight: 700;
+}

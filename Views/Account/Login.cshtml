@@ -170,6 +170,21 @@
                 $('body').addClass('employee-role'); // Adds the employee color scheme.
                 $('#SelectedRole').val('Employee');
             });
+
+            // Show spinner and disable button on form submit
+            $('.login-form').on('submit', function() {
+                $('#login-spinner').show();
+                $('.btn-login').prop('disabled', true);
+            });
+
+            // Hide spinner and enable button if there are validation errors (i.e., login failed)
+        @if (!ViewData.ModelState.IsValid && ViewData.ModelState[string.Empty]?.Errors.Count > 0)
+        {
+            <text>
+                    $('#login-spinner').hide();
+                    $('.btn-login').prop('disabled', false);
+            </text>
+        }
         });
 
         // Show/hide password toggle
@@ -186,12 +201,6 @@
                 icon.classList.add('fas');
             }
         }
-
-        // Show spinner and disable button on form submit
-        $('.login-form').on('submit', function() {
-            $('#login-spinner').show();
-            $('.btn-login').prop('disabled', true);
-        });
     </script>
 
     @{

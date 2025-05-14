@@ -127,6 +127,7 @@ namespace AgriEnergyConnect.Controllers
         [HttpGet]
         public IActionResult Register()
         {
+            ViewData["FormContext"] = "Register";
             return View(new RegisterViewModel());
         }
 
@@ -140,6 +141,7 @@ namespace AgriEnergyConnect.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            ViewData["FormContext"] = "Register";
             // Always require farm fields for registration
             if (string.IsNullOrEmpty(model.FarmName) || string.IsNullOrEmpty(model.Location))
             {
