@@ -37,7 +37,7 @@ Agri-Energy Connect is a prototype web application that connects farmers with en
 ### Setup Instructions
 
 ```bash
-git clone https://github.com/your-organization/agri-energy-connect.git
+git clone https://github.com/GerryHorror/AgriEnergyConnect.git
 cd agri-energy-connect
 ```
 
