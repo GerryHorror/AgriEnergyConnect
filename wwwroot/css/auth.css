@@ -414,3 +414,17 @@ body.employee-role.auth-body {
     font-weight: 600;
     display: inline;
 }
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #aaa;
+    z-index: 2;
+}
+
+    .toggle-password:hover {
+        color: #4CAF50;
+    }
