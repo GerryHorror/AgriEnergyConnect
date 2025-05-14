@@ -20,6 +20,20 @@
         <p class="app-subtitle">Sustainable Farming • Green Energy • Innovation</p>
     </div>
 
+    <!-- New div for TempData messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="alert alert-info">
+            @TempData["InfoMessage"]
+        </div>
+    }
+
     <div class="login-card">
         <!-- Displays a welcome message and a subtitle for the login form. -->
         <h2>Welcome Back</h2>
@@ -35,16 +49,26 @@
         <!-- Login Form -->
         <!-- Handles user login by submitting credentials to the AccountController. -->
         <form asp-action="Login" asp-controller="Account" method="post" class="login-form">
-            @if (!ViewData.ModelState.IsValid)
+            @if (!ViewData.ModelState.IsValid && ViewData.ModelState[string.Empty]?.Errors.Count > 0)
             {
-                <div class="alert alert-danger">
-                    @Html.ValidationSummary()
+                <div class="modern-alert error-alert" id="login-error-alert">
+                    <span class="alert-icon">
+                        <!-- Modern SVG icon (exclamation in a circle) -->
+                        <svg width="24" height="24" fill="none" stroke="#e53935" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" fill="#fdecea" />
+                            <line x1="12" y1="8" x2="12" y2="13" />
+                            <circle cx="12" cy="16" r="1" />
+                        </svg>
+                    </span>
+                    <span class="alert-message">
+                        @Html.ValidationSummary(false)
+                    </span>
+                    <span class="close-alert" onclick="document.getElementById('login-error-alert').style.display='none';" title="Dismiss">&times;</span>
                 </div>
             }
 
-            <!-- Displays validation errors for the form. -->
-            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
-
+            <!-- Hidden field to store the selected role for tab persistence -->
+            <input type="hidden" name="SelectedRole" id="SelectedRole" value="@(ViewBag.SelectedRole ?? "Farmer")" />
             <!-- Hidden field to store the return URL for redirection after login. -->
             <input type="hidden" asp-for="ReturnUrl" value="@(Model.ReturnUrl ?? "/")" />
 
@@ -108,6 +132,7 @@
                 $(this).addClass('active');
                 $('#employee-tab').removeClass('active');
                 $('body').removeClass('employee-role'); // Removes the employee color scheme.
+                $('#SelectedRole').val('Farmer');
             });
 
             // Handles the Employee tab click event.
@@ -116,6 +141,7 @@
                 $(this).addClass('active');
                 $('#farmer-tab').removeClass('active');
                 $('body').addClass('employee-role'); // Adds the employee color scheme.
+                $('#SelectedRole').val('Employee');
             });
         });
     </script>

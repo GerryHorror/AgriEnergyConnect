@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="~/css/auth.css" />
     @await RenderSectionAsync("Styles", required: false)
 </head>
-<body class="auth-body">
+<body class="auth-body @(ViewBag.SelectedRole == "Employee" ? "employee-role" : "")">
     <!-- Main container for authentication-related content. -->
     <div class="auth-container">
         <!-- Renders the body content of the page. -->
