@@ -28,18 +28,21 @@
 
         <!-- Progress Steps -->
         <div class="progress-steps">
-            <div class="step active">
+            <div class="step active" id="step-account-details">
                 <div class="step-number">1</div>
                 <div class="step-label">Account Details</div>
             </div>
-            <div class="step" id="farm-step">
+            <div class="step" id="step-farm-info">
                 <div class="step-number">2</div>
                 <div class="step-label">Farm Information</div>
             </div>
-            <div class="step">
+            <div class="step" id="step-review">
                 <div class="step-number">3</div>
                 <div class="step-label">Review</div>
             </div>
+        </div>
+        <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progress-bar-fill"></div>
         </div>
 
         <!-- Registration Form -->
@@ -125,36 +128,31 @@
                 </div>
             </div>
 
-            <!-- Farmer Information Section (shown when registering as farmer) -->
+            <!-- Farmer Information Section (always shown for registration) -->
             <div class="farmer-section">
-                <div class="farmer-toggle">
-                    <label asp-for="IsFarmer" class="toggle-label">
-                        <input asp-for="IsFarmer" type="checkbox" id="is-farmer-checkbox" />
-                        <span class="toggle-text">I am registering as a Farmer</span>
-                    </label>
+                <h4 class="form-section-title">Farm Information</h4>
+
+                <div class="form-group">
+                    <label asp-for="FarmName">Farm Name</label>
+                    <div class="input-with-icon">
+                        <i class="fa fa-tractor"></i>
+                        <input asp-for="FarmName" class="form-control" placeholder="Enter your farm name" />
+                    </div>
+                    <span asp-validation-for="FarmName" class="validation-message"></span>
                 </div>
 
-                <div id="farmer-fields" style="display: none;">
-                    <h4 class="form-section-title">Farm Information</h4>
-
-                    <div class="form-group">
-                        <label asp-for="FarmName">Farm Name</label>
-                        <div class="input-with-icon">
-                            <i class="fa fa-tractor"></i>
-                            <input asp-for="FarmName" class="form-control" placeholder="Enter your farm name" />
-                        </div>
-                        <span asp-validation-for="FarmName" class="validation-message"></span>
+                <div class="form-group">
+                    <label asp-for="Location">Farm Location</label>
+                    <div class="input-with-icon">
+                        <i class="fa fa-map-marker-alt"></i>
+                        <input asp-for="Location" class="form-control" placeholder="Enter your farm location" />
                     </div>
-
-                    <div class="form-group">
-                        <label asp-for="Location">Farm Location</label>
-                        <div class="input-with-icon">
-                            <i class="fa fa-map-marker-alt"></i>
-                            <input asp-for="Location" class="form-control" placeholder="Enter your farm location" />
-                        </div>
-                        <span asp-validation-for="Location" class="validation-message"></span>
-                    </div>
+                    <span asp-validation-for="Location" class="validation-message"></span>
                 </div>
+            </div>
+
+            <div class="employee-note">
+                <em>If you are an employee, please contact your administrator to create your account.</em>
             </div>
 
             <!-- Submit Button -->
@@ -169,23 +167,28 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
-            // Toggle farmer fields visibility based on checkbox
-            $('#is-farmer-checkbox').change(function() {
-                if($(this).is(':checked')) {
-                    $('#farmer-fields').slideDown();
-                    $('#farm-step').addClass('active');
-                } else {
-                    $('#farmer-fields').slideUp();
-                    $('#farm-step').removeClass('active');
-                }
-            });
-
-            // Check initial state
-            if($('#is-farmer-checkbox').is(':checked')) {
-                $('#farmer-fields').show();
-                $('#farm-step').addClass('active');
+            // Progress bar update on field focus
+            function setStep(step) {
+                $('.progress-steps .step').removeClass('active');
+                if (step === 1) $('#step-account-details').addClass('active');
+                if (step === 2) $('#step-farm-info').addClass('active');
+                if (step === 3) $('#step-review').addClass('active');
+                // Update progress bar fill
+                let percent = step === 1 ? 33 : step === 2 ? 66 : 100;
+                $('#progress-bar-fill').css('width', percent + '%');
             }
-
+            // Account Details fields
+            $('#FirstName, #LastName, #Email, #PhoneNumber, #Username, #Password, #ConfirmPassword').on('focus', function() {
+                setStep(1);
+            });
+            // Farm Info fields
+            $('#FarmName, #Location').on('focus', function() {
+                setStep(2);
+            });
+            // On submit, show review step
+            $('.register-form').on('submit', function() {
+                setStep(3);
+            });
             // Focus first field on page load
             $('input[name="FirstName"]').focus();
         });

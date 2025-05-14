@@ -140,56 +140,37 @@ namespace AgriEnergyConnect.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            // Always require farm fields for registration
+            if (string.IsNullOrEmpty(model.FarmName) || string.IsNullOrEmpty(model.Location))
+            {
+                ModelState.AddModelError(string.Empty, "Farm name and location are required for registration.");
+            }
             if (!ModelState.IsValid)
                 return View(model);
 
             try
             {
-                if (model.IsFarmer)
+                // Only allow farmer registration
+                // Remove IsFarmer logic, always treat as farmer
+                // Check if username or email already exists
+                if (await _authService.UsernameExistsAsync(model.Username))
                 {
-                    // For farmers, create a registration request that requires admin approval
-                    if (string.IsNullOrEmpty(model.FarmName) || string.IsNullOrEmpty(model.Location))
-                    {
-                        ModelState.AddModelError(string.Empty, "Farm name and location are required for farmer registration.");
-                        return View(model);
-                    }
-
-                    // Check if username or email already exists
-                    if (await _authService.UsernameExistsAsync(model.Username))
-                    {
-                        ModelState.AddModelError(string.Empty, "Username already exists. Please choose a different username.");
-                        return View(model);
-                    }
-
-                    if (await _authService.EmailExistsAsync(model.Email))
-                    {
-                        ModelState.AddModelError(string.Empty, "Email already exists. Please use a different email address.");
-                        return View(model);
-                    }
-
-                    // Create a registration request
-                    await _registrationRequestService.CreateRequestFromViewModelAsync(model);
-
-                    // Success, redirect to login with message
-                    TempData["SuccessMessage"] = "Registration request submitted. An administrator will review your application. You will be notified by email when your account is approved.";
-                    return RedirectToAction(nameof(Login));
+                    ModelState.AddModelError(string.Empty, "Username already exists. Please choose a different username.");
+                    return View(model);
                 }
-                else
+
+                if (await _authService.EmailExistsAsync(model.Email))
                 {
-                    // For employees, register directly (this should be restricted to admin users in a real app)
-                    if (User.IsInRole("Employee"))
-                    {
-                        await _authService.RegisterUserAsync(model);
-                        TempData["SuccessMessage"] = "Registration successful. The new employee can now login.";
-                        return RedirectToAction(nameof(Login));
-                    }
-                    else
-                    {
-                        // Non-admins cannot create employee accounts
-                        ModelState.AddModelError(string.Empty, "Only existing administrators can create employee accounts.");
-                        return View(model);
-                    }
+                    ModelState.AddModelError(string.Empty, "Email already exists. Please use a different email address.");
+                    return View(model);
                 }
+
+                // Create a registration request
+                await _registrationRequestService.CreateRequestFromViewModelAsync(model);
+
+                // Success, redirect to login with message
+                TempData["SuccessMessage"] = "Registration request submitted. An administrator will review your application. You will be notified by email when your account is approved.";
+                return RedirectToAction(nameof(Login));
             }
             catch (InvalidOperationException ex)
             {

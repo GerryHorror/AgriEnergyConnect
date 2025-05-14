@@ -20,21 +20,21 @@
         <p class="app-subtitle">Sustainable Farming • Green Energy • Innovation</p>
     </div>
 
-    <!-- New div for TempData messages -->
-    @if (TempData["SuccessMessage"] != null)
-    {
-        <div class="alert alert-success">
-            @TempData["SuccessMessage"]
-        </div>
-    }
-    @if (TempData["InfoMessage"] != null)
-    {
-        <div class="alert alert-info">
-            @TempData["InfoMessage"]
-        </div>
-    }
-
     <div class="login-card">
+        <!-- Success/Info Message (now inside the card) -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success">
+                @TempData["SuccessMessage"]
+            </div>
+        }
+        @if (TempData["InfoMessage"] != null)
+        {
+            <div class="alert alert-info">
+                @TempData["InfoMessage"]
+            </div>
+        }
+
         <!-- Displays a welcome message and a subtitle for the login form. -->
         <h2>Welcome Back</h2>
         <p class="card-subtitle">Sign in to your account</p>
