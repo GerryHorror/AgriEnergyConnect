@@ -33,13 +33,9 @@
             <h5 class="mb-0">Update Farmer Information</h5>
         </div>
         <div class="card-body">
-            @if (TempData["SuccessMessage"] != null)
-            {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    @TempData["SuccessMessage"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            }
+            <!-- Success Message Modal Triggered by TempData -->
+            @* Removed inline alert for success message *@
+
             @if (TempData["ErrorMessage"] != null)
             {
                 <div class="alert alert-danger alert-dismissible fade show" role="alert">
@@ -238,6 +234,27 @@
         }
 </style>
 
+<!-- Success Message Modal -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="successModalLabel">Success</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    @TempData["SuccessMessage"]
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">OK</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
 <!-- Confirmation Modal for Password Change -->
 <div class="modal fade" id="passwordConfirmModal" tabindex="-1" aria-labelledby="passwordConfirmLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -319,6 +336,15 @@
                 form.dataset.passwordConfirmed = 'true';
                 form.submit();
             });
+
+            // Show success modal if present
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+                    var successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    successModal.show();
+            </text>
+        }
         });
     </script>
 }
