@@ -328,3 +328,173 @@ body.employee-role.auth-body {
     body.employee-role.auth-body::after {
         background-color: rgba(0, 137, 123, 0.05);
     }
+
+/* Alert Styles for Login Errors */
+.modern-alert {
+    display: flex;
+    align-items: center;
+    background: #fdecea;
+    color: #b71c1c;
+    border: 1.5px solid #ffcdd2;
+    border-radius: 7px;
+    padding: 10px 16px;
+    margin-bottom: 18px;
+    box-shadow: 0 2px 8px rgba(229, 57, 53, 0.08);
+    position: relative;
+    font-size: 0.98rem;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    animation: fadeIn 0.5s;
+    min-height: 32px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.alert-icon {
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    height: 24px;
+}
+
+.alert-message {
+    flex: 1;
+    font-weight: 500;
+    font-size: 0.98em;
+    letter-spacing: 0.01em;
+    display: flex;
+    align-items: center;
+    min-height: 24px;
+}
+
+.close-alert {
+    position: absolute;
+    right: 10px;
+    top: 8px;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: #e57373;
+    opacity: 0.7;
+    transition: opacity 0.2s, transform 0.2s;
+    padding: 1px 6px;
+    border-radius: 50%;
+    background: none;
+    border: none;
+    line-height: 1;
+}
+
+    .close-alert:hover {
+        opacity: 1;
+        background: #ffcdd2;
+        color: #b71c1c;
+        transform: scale(1.12);
+    }
+
+/* Remove bullet and spacing from ValidationSummary in alert */
+.modern-alert ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    align-items: center;
+}
+
+.modern-alert li {
+    margin: 0;
+    padding: 0;
+    font-weight: 600;
+    display: inline;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #aaa;
+    z-index: 2;
+}
+
+    .toggle-password:hover {
+        color: #4CAF50;
+    }
+
+.login-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 16px;
+    min-height: 40px;
+}
+
+.spinner-svg {
+    width: 40px;
+    height: 40px;
+    animation: spinner-rotate 1s linear infinite;
+}
+
+.spinner-path-green {
+    stroke: #4CAF50;
+    stroke-dasharray: 90, 150;
+    stroke-dashoffset: 0;
+    stroke-linecap: round;
+    animation: spinner-dash-green 1.5s ease-in-out infinite;
+}
+
+.spinner-path-teal {
+    stroke: #00897B;
+    stroke-dasharray: 60, 150;
+    stroke-dashoffset: 60;
+    stroke-linecap: round;
+    animation: spinner-dash-teal 1.5s ease-in-out infinite;
+}
+
+@keyframes spinner-rotate {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spinner-dash-green {
+    0% {
+        stroke-dasharray: 1, 150;
+        stroke-dashoffset: 0;
+    }
+
+    50% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -35;
+    }
+
+    100% {
+        stroke-dasharray: 90, 150;
+        stroke-dashoffset: -124;
+    }
+}
+
+@keyframes spinner-dash-teal {
+    0% {
+        stroke-dasharray: 1, 150;
+        stroke-dashoffset: 60;
+    }
+
+    50% {
+        stroke-dasharray: 60, 150;
+        stroke-dashoffset: 25;
+    }
+
+    100% {
+        stroke-dasharray: 60, 150;
+        stroke-dashoffset: -94;
+    }
+}

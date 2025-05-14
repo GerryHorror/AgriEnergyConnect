@@ -20,6 +20,20 @@
         <p class="app-subtitle">Sustainable Farming • Green Energy • Innovation</p>
     </div>
 
+    <!-- New div for TempData messages -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">
+            @TempData["SuccessMessage"]
+        </div>
+    }
+    @if (TempData["InfoMessage"] != null)
+    {
+        <div class="alert alert-info">
+            @TempData["InfoMessage"]
+        </div>
+    }
+
     <div class="login-card">
         <!-- Displays a welcome message and a subtitle for the login form. -->
         <h2>Welcome Back</h2>
@@ -35,16 +49,26 @@
         <!-- Login Form -->
         <!-- Handles user login by submitting credentials to the AccountController. -->
         <form asp-action="Login" asp-controller="Account" method="post" class="login-form">
-            @if (!ViewData.ModelState.IsValid)
+            @if (!ViewData.ModelState.IsValid && ViewData.ModelState[string.Empty]?.Errors.Count > 0)
             {
-                <div class="alert alert-danger">
-                    @Html.ValidationSummary()
+                <div class="modern-alert error-alert" id="login-error-alert">
+                    <span class="alert-icon">
+                        <!-- Modern SVG icon (exclamation in a circle) -->
+                        <svg width="24" height="24" fill="none" stroke="#e53935" stroke-width="2" viewBox="0 0 24 24">
+                            <circle cx="12" cy="12" r="10" fill="#fdecea" />
+                            <line x1="12" y1="8" x2="12" y2="13" />
+                            <circle cx="12" cy="16" r="1" />
+                        </svg>
+                    </span>
+                    <span class="alert-message">
+                        @Html.ValidationSummary(false)
+                    </span>
+                    <span class="close-alert" onclick="document.getElementById('login-error-alert').style.display='none';" title="Dismiss">&times;</span>
                 </div>
             }
 
-            <!-- Displays validation errors for the form. -->
-            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
-
+            <!-- Hidden field to store the selected role for tab persistence -->
+            <input type="hidden" name="SelectedRole" id="SelectedRole" value="@(ViewBag.SelectedRole ?? "Farmer")" />
             <!-- Hidden field to store the return URL for redirection after login. -->
             <input type="hidden" asp-for="ReturnUrl" value="@(Model.ReturnUrl ?? "/")" />
 
@@ -65,7 +89,10 @@
                 <label asp-for="Password">Password</label>
                 <div class="input-with-icon">
                     <i class="fa fa-lock"></i>
-                    <input asp-for="Password" class="form-control" placeholder="Enter your password" type="password" />
+                    <input asp-for="Password" class="form-control" placeholder="Enter your password" type="password" id="password-input" />
+                    <span class="toggle-password" onclick="togglePasswordVisibility()">
+                        <i class="fas fa-eye" id="toggle-password-icon"></i>
+                    </span>
                 </div>
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
@@ -78,6 +105,30 @@
                     <label for="remember-me">Remember me</label>
                 </div>
                 <a href="#" class="forgot-password">Forgot Password?</a>
+            </div>
+
+            <!-- Spinner shown during login submission -->
+            <div id="login-spinner" class="login-spinner" style="display:none;">
+                <svg class="spinner-svg" viewBox="0 0 50 50">
+                    <!-- Spinner circles -->
+                    <circle class="spinner-path-green" cx="25" cy="25" r="20" fill="none" stroke-width="5" />
+                    <circle class="spinner-path-teal" cx="25" cy="25" r="20" fill="none" stroke-width="5" />
+                    <!-- Soil/seed -->
+                    <ellipse cx="25" cy="38" rx="5" ry="2" fill="#795548" opacity="0.5" />
+                    <!-- Sprout stem (animated) -->
+                    <rect x="24" y="30" width="2" height="8" rx="1" fill="#4CAF50">
+                        <animate attributeName="height" from="0" to="8" dur="0.7s" begin="0.2s" fill="freeze" />
+                        <animate attributeName="y" from="38" to="30" dur="0.7s" begin="0.2s" fill="freeze" />
+                    </rect>
+                    <!-- Left leaf (animated) -->
+                    <ellipse cx="23" cy="30" rx="0" ry="1.2" fill="#8BC34A">
+                        <animate attributeName="rx" from="0" to="2.2" dur="0.5s" begin="0.7s" fill="freeze" />
+                    </ellipse>
+                    <!-- Right leaf (animated) -->
+                    <ellipse cx="27" cy="30" rx="0" ry="1.2" fill="#43A047">
+                        <animate attributeName="rx" from="0" to="2.2" dur="0.5s" begin="0.7s" fill="freeze" />
+                    </ellipse>
+                </svg>
             </div>
 
             <!-- Submit Button -->
@@ -108,6 +159,7 @@
                 $(this).addClass('active');
                 $('#employee-tab').removeClass('active');
                 $('body').removeClass('employee-role'); // Removes the employee color scheme.
+                $('#SelectedRole').val('Farmer');
             });
 
             // Handles the Employee tab click event.
@@ -116,7 +168,29 @@
                 $(this).addClass('active');
                 $('#farmer-tab').removeClass('active');
                 $('body').addClass('employee-role'); // Adds the employee color scheme.
+                $('#SelectedRole').val('Employee');
             });
+        });
+
+        // Show/hide password toggle
+        function togglePasswordVisibility() {
+            var input = document.getElementById('password-input');
+            var icon = document.getElementById('toggle-password-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fas');
+                icon.classList.add('fas');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fas');
+                icon.classList.add('fas');
+            }
+        }
+
+        // Show spinner and disable button on form submit
+        $('.login-form').on('submit', function() {
+            $('#login-spinner').show();
+            $('.btn-login').prop('disabled', true);
         });
     </script>
 

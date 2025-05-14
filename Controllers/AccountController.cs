@@ -51,11 +51,13 @@ namespace AgriEnergyConnect.Controllers
         // Handles the submission of the login form.
         // Parameters:
         //   model - The LoginViewModel containing the user's login credentials.
+        //   SelectedRole - The selected role for the login form.
         // Returns a redirect to the appropriate dashboard on success or redisplays the login form on failure.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(LoginViewModel model)
+        public async Task<IActionResult> Login(LoginViewModel model, string SelectedRole)
         {
+            ViewBag.SelectedRole = SelectedRole ?? "Farmer";
             if (!ModelState.IsValid)
                 return View(model);
 
@@ -66,7 +68,8 @@ namespace AgriEnergyConnect.Controllers
 
                 if (user == null)
                 {
-                    ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+                    ModelState.AddModelError(string.Empty, "Login failed. Please check your username and password and try again.");
+                    ViewBag.SelectedRole = SelectedRole ?? "Farmer";
                     return View(model);
                 }
 
@@ -99,6 +102,7 @@ namespace AgriEnergyConnect.Controllers
             catch (Exception ex)
             {
                 ModelState.AddModelError(string.Empty, $"Login error: {ex.Message}");
+                ViewBag.SelectedRole = SelectedRole ?? "Farmer";
                 return View(model);
             }
         }
