@@ -1,7 +1,9 @@
 ﻿namespace AgriEnergyConnect.Helpers
 {
+    // Provides helper methods and data for product categories.
     public static class CategoryHelper
     {
+        // List of available product categories and their associated display colors.
         public static readonly List<CategoryInfo> Categories = new()
         {
             new CategoryInfo("Grains", "#E1F5FE"),
@@ -29,6 +31,8 @@
             new CategoryInfo("Biogas", "#E0F7FA"),
         };
 
+        // Returns the color associated with a given category name.
+        // If not found, returns a default color.
         public static string GetCategoryColor(string category)
         {
             var cat = Categories.FirstOrDefault(c => c.Name.Equals(category, StringComparison.OrdinalIgnoreCase));
@@ -36,11 +40,16 @@
         }
     }
 
+    // Represents a product category and its display color.
     public class CategoryInfo
     {
+        // The name of the category.
         public string Name { get; }
+
+        // The display color for the category.
         public string Color { get; }
 
+        // Initializes a new instance of CategoryInfo with a name and color.
         public CategoryInfo(string name, string color)
         {
             Name = name;
